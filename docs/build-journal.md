@@ -50,23 +50,28 @@ Verdicts: **answered** (docs solved it), **partial** (docs + trial-and-error), *
 | **failed** — docs wrong, absent, or actively misleading | 10 | 30% |
 | **failed, then answered** — docs sent me the wrong way, empirical result corrected it | 2 | 6% |
 
-Two of the nine failures deserve an asterisk in Salesforce's favor: the
+Two of the ten failures deserve an asterisk in Salesforce's favor: the
 `verify-roster.sh` JSON parse failure (Task 3) was a local `FORCE_COLOR=3`
 shell quirk, not a documentation gap, and the vacuous-security-test failure
 (Task 7) was a defect in *this build's own plan*, caught by code review. Netting
-those out, **seven hard documentation failures remain — and all seven are on the
-`sf agent` / `AiAuthoringBundle` surface.**
+those out, **eight hard documentation failures remain — and all eight are on the
+`sf agent` / `AiAuthoringBundle` surface**, including Task 9's undocumented
+255-character cap on `AiEvaluationDefinition.description`.
 
 **Split by surface age:**
 
 | Surface | Rows | answered | partial | failed |
 |---|---|---|---|---|
-| `sf agent` + `AiAuthoringBundle` (Tasks 1, 2, 5, 6, 8) | 22 | 11 | 3 | 7 (+1 hybrid) |
+| `sf agent` + `AiAuthoringBundle` (Tasks 1, 2, 5, 6, 8, 9) | 25 | 12 | 3 | 8 (+2 hybrid) |
 | Flows, Bulk API data, Apex (Tasks 3, 4, 7) | 8 | 5 | 1 | 2 (neither a real docs gap) |
+
+Both tables reconcile against the 33 rows above: 12 + 3 + 8 + 2 = 25 on the new
+surface, 5 + 1 + 2 = 8 on the mature ones.
 
 ### Best doc moment
 
-`sf agent test` (Task 6, row 20). All four commands — `generate test-spec`,
+`sf agent test` (Task 6, the "do the four test commands make the workflow
+discoverable" question). All four commands — `generate test-spec`,
 `test create`, `test run`, `test results` — describe the full lifecycle in their
 own `--help` text *and cross-reference each other by name*, so reading any one
 of them tells you the next command to run. `generate test-spec --help` even
@@ -82,7 +87,8 @@ copy-paste example that errors.)
 
 `sf agent publish authoring-bundle` and `sf agent test run --wait` both **exit
 non-zero with `fetch failed` on runs that fully succeeded server-side** (Task 5,
-rows 25/18; Task 6, row 32). The publish that reported failure had in fact
+the "does publish succeed after the rename" question; Task 6, the "does test run
+match the spurious fetch-failed pattern" question). The publish that reported failure had in fact
 created BotVersion 3, registered both `GenAiFunctionDefinition` records, and
 logged a `Succeeded` deploy — provable only by cross-querying the org with the
 deploy ID buried in the *error* payload. No `--help` text, error message, or doc
@@ -93,7 +99,8 @@ every green build.
 Runner-up, and arguably worse for a first-time user: the CLI's own interactive
 `generate test-spec` wizard offers org-suffixed topic/action names
 (`candidate_screening_16jbm000002K4hR`) that the runtime evaluator can never
-match, because it compares against short local developer names (Task 6, row 30).
+match, because it compares against short local developer names (Task 6, the
+"full/suffixed name or short developer name" question).
 Following the tool's own suggestions produces a permanently-failing test suite.
 
 ### The one-sentence verdict
@@ -104,7 +111,7 @@ every command worked as written the first time — while the newest surface,
 `sf agent` / `AiAuthoringBundle`, is a split personality: excellently documented
 where it is documented (the test lifecycle), and silent exactly where it hurts
 most (metadata-type deploy gaps, the folder-name-equals-developer-name rule,
-and success reported as failure), such that seven of the twenty-two questions on
+and success reported as failure), such that eight of the twenty-five questions on
 that surface were answerable only by reading the installed plugin's source, by
 cross-querying the org to find out what had actually happened, or by running a
 documented example and watching it error.
@@ -123,4 +130,5 @@ just elapsed time) finally passed. No command's `--help` or `--json` output
 warns that "activated" and "the router now reflects your edit" are different
 moments in time. This cost the most iteration time of any finding in the
 build and is exactly the kind of gap `docs/build-journal.md` exists to
-surface — see row 9 above for the full investigation.
+surface — see the Task 9 row on the router-instructions edit above for the full
+investigation.

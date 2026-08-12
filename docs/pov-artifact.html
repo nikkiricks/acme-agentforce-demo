@@ -330,7 +330,7 @@
   .pill.bad { color: var(--bad-t); }
   .pill.neu { color: var(--neutral-t); }
 
-  /* ---- proportion meter: 30 questions, four verdicts ---- */
+  /* ---- proportion meter: 33 questions, four verdicts ---- */
   .meter {
     display: flex;
     gap: 2px;
@@ -338,10 +338,10 @@
     margin: 0 0 0.6rem;
   }
   .meter span { display: block; }
-  .meter .s-ok  { background: var(--ok);      flex: 16; }
+  .meter .s-ok  { background: var(--ok);      flex: 17; }
   .meter .s-par { background: var(--warn);    flex: 4; }
-  .meter .s-bad { background: var(--bad);     flex: 9; }
-  .meter .s-neu { background: var(--neutral); flex: 1; }
+  .meter .s-bad { background: var(--bad);     flex: 10; }
+  .meter .s-neu { background: var(--neutral); flex: 2; }
   .meter-cap {
     font-family: var(--font-mono);
     font-size: 0.68rem;
@@ -402,10 +402,10 @@
         file in one repository — which is the same thing as the audit trail.</p>
 
       <div class="stats">
-        <div class="stat"><span class="stat-n is-ok">v3 Active</span><span class="stat-l">BotVersion, published &amp; activated from CLI</span></div>
-        <div class="stat"><span class="stat-n">4/4 &middot; 4/4</span><span class="stat-l">Topic &amp; action, agent test suite</span></div>
+        <div class="stat"><span class="stat-n is-ok">v7 Active</span><span class="stat-l">BotVersion, published &amp; activated from CLI</span></div>
+        <div class="stat"><span class="stat-n">5/5 &middot; 5/5</span><span class="stat-l">Topic &amp; action, agent test suite</span></div>
         <div class="stat"><span class="stat-n">2/2</span><span class="stat-l">Security tests, run <code>707bm000018WaZv</code></span></div>
-        <div class="stat"><span class="stat-n">30</span><span class="stat-l">Questions asked of the docs, scored</span></div>
+        <div class="stat"><span class="stat-n">33</span><span class="stat-l">Questions asked of the docs, scored</span></div>
       </div>
     </div>
   </header>
@@ -462,7 +462,7 @@
 
         <div class="pair">
           <div class="row del"><span class="sign">&minus;</span><span class="txt"><span class="lbl">UI</span>Hallucinated syntax — the assistant invented a <code>retriever://</code> target and a <code>source:</code> attribute that do not exist, then proposed fixes for its own invention across three error cycles.</span></div>
-          <div class="row add"><span class="sign">+</span><span class="txt"><span class="lbl">CLI</span><code>sf agent validate authoring-bundle</code> compiles the script against the real grammar before anything touches the org, and a human reads the diff first. Clean on the first attempt, both actions.<span class="artifact">docs/build-journal.md &middot; rows 3, 22</span></span></div>
+          <div class="row add"><span class="sign">+</span><span class="txt"><span class="lbl">CLI</span><code>sf agent validate authoring-bundle</code> compiles the script against the real grammar before anything touches the org, and a human reads the diff first. Clean on the first attempt, both actions.<span class="artifact">docs/build-journal.md &middot; Task 1 and Task 5 validate rows</span></span></div>
         </div>
 
         <div class="pair">
@@ -487,12 +487,12 @@
 
         <div class="pair">
           <div class="row del"><span class="sign">&minus;</span><span class="txt"><span class="lbl">UI</span>Untestable demo — reset the simulator, retype the utterance, eyeball the answer, repeat after every config change, with stale sessions silently testing the old configuration.</span></div>
-          <div class="row add"><span class="sign">+</span><span class="txt"><span class="lbl">CLI</span><code>sf agent test</code> suite: four cases versioned as YAML, run from one command, scored on topic, action, and an LLM judge. 21 seconds end to end.<span class="artifact">tests/agent/acme-triage-testspec.yaml &middot; docs/demo-tests.md</span></span></div>
+          <div class="row add"><span class="sign">+</span><span class="txt"><span class="lbl">CLI</span><code>sf agent test</code> suite: five cases versioned as YAML, run from one command, scored on topic, action, and an LLM judge. 21 seconds end to end. Case 5 is a bug a user hit in live preview, turned into a permanent regression test.<span class="artifact">tests/agent/acme-triage-testspec.yaml &middot; docs/demo-tests.md</span></span></div>
         </div>
 
         <div class="pair">
           <div class="row del"><span class="sign">&minus;</span><span class="txt"><span class="lbl">UI</span>Work lost entirely — the previous session's apparently-committed work was never persisted. Both BotVersions <code>Inactive</code>; the action absent from the org.</span></div>
-          <div class="row add"><span class="sign">+</span><span class="txt"><span class="lbl">CLI</span>Immutable commits, then explicit <code>sf agent publish authoring-bundle</code> and <code>sf agent activate</code>. BotVersion 3 is Active and byte-identical to what is in the repo.<span class="artifact">docs/build-journal.md &middot; rows 12, 25, 26</span></span></div>
+          <div class="row add"><span class="sign">+</span><span class="txt"><span class="lbl">CLI</span>Immutable commits, then explicit <code>sf agent publish authoring-bundle</code> and <code>sf agent activate</code>. BotVersion 7 is Active and byte-identical to what is in the repo.<span class="artifact">docs/build-journal.md &middot; Task 2 version-state row, Task 5 publish/activate rows</span></span></div>
         </div>
 
       </div>
@@ -507,10 +507,10 @@
         question I had to ask of the docs and whether they answered it. Thirty questions across
         eight tasks, with the commands and error text preserved in the journal.</p>
 
-      <div class="meter" role="img" aria-label="Of 30 documentation questions: 16 answered, 4 partial, 9 failed, 1 failed then answered.">
+      <div class="meter" role="img" aria-label="Of 33 documentation questions: 17 answered, 4 partial, 10 failed, 2 failed then answered.">
         <span class="s-ok"></span><span class="s-par"></span><span class="s-bad"></span><span class="s-neu"></span>
       </div>
-      <p class="meter-cap">30 questions &middot; 53% answered &middot; 13% partial &middot; 30% failed &middot; 3% hybrid</p>
+      <p class="meter-cap">33 questions &middot; 52% answered &middot; 12% partial &middot; 30% failed &middot; 6% hybrid</p>
 
       <div class="scroller">
         <table>
@@ -518,17 +518,17 @@
             <tr><th scope="col">Verdict</th><th scope="col">Meaning</th><th scope="col">Count</th></tr>
           </thead>
           <tbody>
-            <tr><td><span class="pill ok">answered</span></td><td>Docs solved it outright</td><td class="num">16</td></tr>
+            <tr><td><span class="pill ok">answered</span></td><td>Docs solved it outright</td><td class="num">17</td></tr>
             <tr><td><span class="pill warn">partial</span></td><td>Docs plus trial-and-error</td><td class="num">4</td></tr>
-            <tr><td><span class="pill bad">failed</span></td><td>Docs wrong, absent, or actively misleading</td><td class="num">9</td></tr>
-            <tr><td><span class="pill neu">hybrid</span></td><td>Docs sent me the wrong way; the org corrected them</td><td class="num">1</td></tr>
+            <tr><td><span class="pill bad">failed</span></td><td>Docs wrong, absent, or actively misleading</td><td class="num">10</td></tr>
+            <tr><td><span class="pill neu">hybrid</span></td><td>Docs sent me the wrong way; the org corrected them</td><td class="num">2</td></tr>
           </tbody>
         </table>
       </div>
 
-      <p style="margin-top:1.2rem;">Two of the nine failures are not really Salesforce's: one
+      <p style="margin-top:1.2rem;">Two of the ten failures are not really Salesforce's: one
         was a local shell quirk, one a defect in this build's own plan caught by code review.
-        <strong>Seven hard documentation failures remain, and all seven sit on the same
+        <strong>Eight hard documentation failures remain, and all eight sit on the same
         surface.</strong></p>
 
       <div class="scroller">
@@ -537,7 +537,7 @@
             <tr><th scope="col">Surface</th><th scope="col">Questions</th><th scope="col">Answered</th><th scope="col">Partial</th><th scope="col">Failed</th></tr>
           </thead>
           <tbody>
-            <tr><td><code>sf agent</code> + <code>AiAuthoringBundle</code></td><td class="num">22</td><td class="num">11</td><td class="num">3</td><td class="num">7 (+1 hybrid)</td></tr>
+            <tr><td><code>sf agent</code> + <code>AiAuthoringBundle</code></td><td class="num">25</td><td class="num">12</td><td class="num">3</td><td class="num">8 (+2 hybrid)</td></tr>
             <tr><td>Flows, Bulk API, Apex</td><td class="num">8</td><td class="num">5</td><td class="num">1</td><td class="num">2 <span style="color:var(--ink-3)">(neither a real docs gap)</span></td></tr>
           </tbody>
         </table>
@@ -557,13 +557,23 @@
         provable only by pulling the deploy ID out of the <em>error</em> payload and
         cross-querying the org. An exit code that lies is worse than a missing flag, because
         CI is built to trust exactly that signal.</p>
+      <p><strong>The same pattern one layer deeper, and the costliest finding in the
+        build.</strong> Fixing a routing bug meant editing the router's instructions,
+        publishing, activating, testing. Both <code>publish</code> and <code>activate</code>
+        reported success the instant their deploy landed — but the classifier model behind the
+        router took several more minutes to honour the change. Four consecutive
+        publish&ndash;activate&ndash;test cycles reproduced the original bug before a fifth
+        attempt, with no new publish and only elapsed time, finally passed. Nothing in any
+        command's output distinguishes "activated" from "the router now reflects your edit."</p>
 
-      <h3>Three more worth carrying into a customer conversation</h3>
+      <h3>Four more worth carrying into a customer conversation</h3>
       <p><code>AiAuthoringBundle</code> cannot be retrieved or deployed through the Metadata API
         at any API version this org supports — <code>sf agent publish</code> is the only path.
         The bundle's folder name must equal the <code>developer_name</code> compiled from inside
         the <code>.agent</code> file, and <code>-n/--api-name</code> is ignored for that lookup;
-        root-caused by reading the installed plugin's source. And the interactive
+        root-caused by reading the installed plugin's source. The agent test spec's
+        <code>description</code> field has an undocumented 255-character server-side cap that
+        fails with <code>data value too large</code>. And the interactive
         <code>generate test-spec</code> wizard offers org-suffixed topic and action names that
         the runtime evaluator can never match, so following the tool's own suggestions builds a
         permanently-failing suite.</p>
@@ -600,7 +610,7 @@
         could later determine whether it was the fix that worked.</p>
 
       <h3>Immutable versions, and the decoy user</h3>
-      <p>BotVersion 3 is Active; v1 and v2 remain Inactive, and only one version can be active
+      <p>BotVersion 7 is Active; v1 through v6 remain Inactive, and only one version can be active
         at a time. The agent's <code>default_agent_user</code> is locked after first publish,
         and this org contains a near-twin user differing only by numeric suffix — during V1 an
         assistant edit swapped to the decoy and broke validation. In V2 the <code>access:</code>
@@ -613,9 +623,9 @@
     <div class="idx">05</div>
     <div class="body">
       <h2>Test results — the demo ladder as a suite</h2>
-      <p class="note" style="margin-bottom:1.4rem;">Job <code>4KBbm00000032tJGAQ</code>,
-        <code>Acme_Enterprise_Triage_Ladder</code>, completed in 21s.
-        <strong>Topic 4/4 &middot; Action 4/4 &middot; Outcome 3/4.</strong></p>
+      <p class="note" style="margin-bottom:1.4rem;">Job <code>4KBbm00000033FtGAI</code>,
+        <code>Acme_Enterprise_Triage_Ladder</code>, on BotVersion 7, completed in 21s.
+        <strong>Topic 5/5 &middot; Action 5/5 &middot; Outcome 4/5.</strong></p>
 
       <div class="scroller">
         <table>
@@ -656,16 +666,26 @@
               <td><span class="pill ok">pass</span></td>
               <td><span class="pill ok">pass</span></td>
               <td><span class="pill warn">borderline</span></td>
-              <td>Email addressed to "Elena" — first name only. The judge scored it 3/5 and flagged that the surname never appears.</td>
+              <td>Email addressed to "Elena" — first name only. The judge scores this one anywhere from 2 to 5 across runs; treat it as borderline, not reliable.</td>
+            </tr>
+            <tr>
+              <td class="num">5</td>
+              <td>Draft a short outreach email to Elena Vasquez. <em>(cold start, no prior context)</em></td>
+              <td><span class="pill ok">pass</span></td>
+              <td><span class="pill ok">pass</span></td>
+              <td><span class="pill ok">pass</span></td>
+              <td>The regression test. A user hit this in live preview and the router sent it to <code>off_topic</code> — the screening agent never saw it. Now routed correctly, fetches the profile, and drafts a grounded email.</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <p style="margin-top:1.2rem;">Three of four pass, and case 2 is on the page rather than
-        edited out. That is the point of running the ladder as a suite instead of a script
-        someone retypes: <strong>when the agent is wrong, one command says exactly
-        where.</strong></p>
+      <p style="margin-top:1.2rem;">Four of five pass, and case 2 is on the page rather than
+        edited out. Case 5 is the argument in miniature: a user reported a routing bug in live
+        preview, and instead of a fix nobody can verify, it became a committed test case that
+        fails loudly if the behaviour ever comes back. That is the point of running the ladder
+        as a suite instead of a script someone retypes: <strong>when the agent is wrong, one
+        command says exactly where.</strong></p>
     </div>
   </section>
 

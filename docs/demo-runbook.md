@@ -164,9 +164,16 @@ one — the UI build got silently lost; this one is still here."
 
 ## Fallbacks
 
-**Roster is wrong / data got reseeded.** Re-run the Task 3 import:
+**Roster is wrong / data got reseeded.** **Check the count before re-importing.**
+The import is a pure insert with no upsert key, so running it against a roster
+that is already intact duplicates the 17 CSV rows and takes you to 42 — which
+breaks beat 1 far worse than whatever you were trying to fix.
 
 ```bash
+# 1. Look first. Only proceed if this is BELOW 25.
+bash scripts/verify-roster.sh
+
+# 2. Only if the count is short:
 sf data import bulk --sobject Contact --file data/candidates-v2.csv \
   --line-ending CRLF --wait 10 -o renewal-org
 bash scripts/verify-roster.sh
@@ -174,9 +181,10 @@ bash scripts/verify-roster.sh
 
 `--line-ending CRLF` is mandatory — the Bulk API's auto-detection guesses LF and
 rejects the file. Note the CSV holds 17 rows; the 25-count assumes the 8
-original Contacts are still present. If the count comes back 17, the org was
-wiped and the demo count changes — say the real number rather than the scripted
-one.
+original Contacts are still present, so a clean re-import into an emptied org
+lands at 17, not 25. If the count comes back 17, say the real number rather than
+the scripted one. If it comes back above 25, you have duplicates — do **not**
+import again; delete the extras or just say the real number.
 
 **The agent misbehaves live, or the test run hangs.** Do not debug on camera.
 Show the last known-good results and speak beat 4 from the table above:

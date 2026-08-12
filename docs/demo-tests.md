@@ -19,7 +19,7 @@ found in live preview; see "Task 9 — outreach routing fix" below.
   framework's runtime `topic_sequence_match`/`action_sequence_match`
   assertions actually compare against the **short** local developer name, not
   the full/suffixed one. The spec below uses the short names; see "Iteration
-  note" further down and journal row 6 for how that was discovered.
+  note" further down and the Task 6 journal rows for how that was discovered.
 - Actions exercised: `CountCandidates` (flow://Count_Candidates →
   `candidateCount`), `GetCandidateProfiles` (flow://Get_Candidate_Profiles →
   `profilesText`) — full org names `CountCandidates_179bm000003tC5I` /
@@ -48,7 +48,8 @@ sf agent test run \
 # Re-fetch results for a prior run by job ID. `-i/--job-id` is REQUIRED —
 # `sf agent test results --help` shows a `--use-most-recent` flag in its own
 # examples, but that flag does not exist in this CLI version (2.145.6) and
-# errors with "Nonexistent flag". See journal row 8.
+# errors with "Nonexistent flag". See the Task 8 journal row on
+# `sf agent test results --help`.
 sf agent test results --job-id <JOB_ID> -o renewal-org --verbose
 ```
 
@@ -66,7 +67,8 @@ Each test case is judged on three kinds of expectations:
   `customEvaluations`. A `customEvaluations` (`string_comparison`,
   `operator: contains`) attempt for these was tried first and dropped — its
   `actual: $.generatedData.outcome` JSONPath reference errored server-side
-  on every case. See "Iteration note" below and journal row 6.
+  on every case. See "Iteration note" below and the Task 6 journal row on
+  `customEvaluations` JSONPath references.
 
 ## The 5 ladder cases
 
@@ -96,6 +98,15 @@ Each test case is judged on three kinds of expectations:
   case 3's screening result, so "the strongest candidate" resolves to a named
   person instead of nothing.
 - **Expected:** response is an email naming Elena Vasquez or Maria Gonzalez.
+- **Spec quirk — `expectedActions: []` still scores Pass when an action fires.**
+  The spec declares no expected actions for this case, but every run since Task
+  9 shows the agent invoking `GetCandidateProfiles`, and the framework still
+  reports `Action: Pass`. An empty `expectedActions` list is evidently treated
+  as "no assertion" rather than "assert that nothing fired," so this case's
+  action column is not actually checking anything. Case 5 is the case that
+  genuinely asserts `GetCandidateProfiles`. Worth tightening if the suite is
+  ever used as a real gate — noted rather than changed here, since editing the
+  spec would require re-creating the `AiEvaluationDefinition` and re-running.
 
 ### 5. Outreach email, cold start (Task 9 regression test)
 - **Utterance:** "Draft a short outreach email to Elena Vasquez."
@@ -123,7 +134,8 @@ Salesforce's own documented pattern for router `description:` fields driving
 subagent selection — a `description:` on the `go_to_candidate_screening` and
 `go_to_off_topic` transition actions inside `agent_router`, plus an expanded
 top-level `description:` on the `candidate_screening` subagent itself
-mentioning outreach. See `docs/build-journal.md` row 9 for the full
+mentioning outreach. See the Task 9 journal row on the router-instructions
+edit for the full
 investigation, including a real finding: none of these edits, individually or
 combined, changed the router's live behavior in the first four
 publish-activate-test cycles immediately following each change — the fix
@@ -209,7 +221,8 @@ have offered (they're read from `GenAiPlannerBundle.localTopicLinks` /
 (`lastExecution.topic` / `lastExecution.invokedActions[].function.name`)
 reports the **short local developer name** instead (`candidate_screening`,
 `CountCandidates`), so every topic/action assertion errored or failed. Fixed
-by switching the spec to short names throughout; see journal row 6 for the
+by switching the spec to short names throughout; see the Task 6 journal row on
+full/suffixed vs. short developer names for the
 full writeup, including a second, unresolved gap (`customEvaluations` with a
 `$.generatedData.outcome` JSONPath actual-reference errored server-side —
 dropped in favor of the built-in LLM-judge `bot_response_rating`/

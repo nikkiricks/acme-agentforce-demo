@@ -68,13 +68,13 @@ V2 mechanism that removes it. The artifact column is where to look in this repo.
 |---|---|---|
 | **Assistant amnesia** — the authoring assistant lost all context on every new draft, timeout, or crash (~5 times in one session); every instruction had to be restated in full | Git history. The agent definition is a file; its state is the diff, not a chat transcript. Nothing to re-explain | `git log --oneline`; commit `765dc08` |
 | **Silently half-applied edits** — assistant edits had to be manually verified in the `</>` code view because they were sometimes missed or partially applied | You edit the file. There is no intermediary to second-guess; `git diff` is the verification | `force-app/main/default/aiAuthoringBundles/Acme_Enterprise/Acme_Enterprise.agent` |
-| **Hallucinated syntax** — the assistant invented `retriever://` targets and a `source:` attribute that do not exist, then proposed fixes for its own invention across three error cycles | `sf agent validate authoring-bundle` compiles the script locally against the real grammar before anything touches the org, and the diff is reviewed by a human first | `docs/build-journal.md` rows 3, 22 (`{"success": true}` first attempt, both actions) |
+| **Hallucinated syntax** — the assistant invented `retriever://` targets and a `source:` attribute that do not exist, then proposed fixes for its own invention across three error cycles | `sf agent validate authoring-bundle` compiles the script locally against the real grammar before anything touches the org, and the diff is reviewed by a human first | `docs/build-journal.md`, Task 1 and Task 5 validate rows (`{"success": true}` first attempt, both actions) |
 | **Parser-derailing syntax** — a `with` line inside an action *definition* block produced a phantom "must specify at least one input" error | Same validate step, plus a diff that shows the `actions:` definition block and the `reasoning.actions` reference block adjacent and reviewable | `git show 765dc08 -M -- '*aiAuthoringBundles*'` |
 | **Edited-but-inactive flow** — an edited flow version that was never activated meant the old version stayed live; cost roughly an hour of debugging the wrong layer | `<status>Active</status>` is declared in the flow XML and deployed as source. Activation is not a click you can forget; it is a line in the file | `force-app/main/default/flows/Get_Candidate_Profiles.flow-meta.xml:70` |
 | **Run-context mystery** — the count returned 0 for the agent but 8 in Debug. Two suspects were identified, one fix was applied, and *which one worked was never determined* | `<runInMode>SystemModeWithoutSharing</runInMode>` — one reviewable line, in source, in the diff. The grant is deliberate and legible, not discovered by elimination | `force-app/main/default/flows/Count_Candidates.flow-meta.xml:61` |
 | **Import Wizard mis-mapping** — the wizard auto-mapped the resume text to *Account*: Description rather than Contact: Description, silently producing a roster with no resumes | Bulk API import from a CSV whose header row *is* the field mapping, plus a verification script that asserts the round-trip | `data/candidates-v2.csv`; `scripts/verify-roster.sh` |
-| **Untestable demo** — "reset the simulator, retype the utterance, eyeball the answer," repeated after every config change, with stale sessions silently testing old config | `sf agent test` suite: 4 cases, versioned as YAML, run from one command, scored on topic, action, and an LLM judge | `tests/agent/acme-triage-testspec.yaml`; `docs/demo-tests.md` |
-| **Work lost entirely** — the Aug 10 UI session's committed-looking work was never persisted; both BotVersions `Inactive`, the action absent from the org | Immutable commits, then explicit `sf agent publish authoring-bundle` + `sf agent activate`. BotVersion 3 is `Active` in the org and byte-identical to what is in the repo | `docs/build-journal.md` rows 12, 25, 26 |
+| **Untestable demo** — "reset the simulator, retype the utterance, eyeball the answer," repeated after every config change, with stale sessions silently testing old config | `sf agent test` suite: 5 cases, versioned as YAML, run from one command, scored on topic, action, and an LLM judge. Case 5 is a bug a user hit in live preview, turned into a permanent regression test | `tests/agent/acme-triage-testspec.yaml`; `docs/demo-tests.md` |
+| **Work lost entirely** — the Aug 10 UI session's committed-looking work was never persisted; both BotVersions `Inactive`, the action absent from the org | Immutable commits, then explicit `sf agent publish authoring-bundle` + `sf agent activate`. BotVersion 7 is `Active` in the org and byte-identical to what is in the repo | `docs/build-journal.md`, Task 2 version-state row and Task 5 publish/activate rows |
 
 **The Agentforce Builder UI and its authoring assistant were never opened during
 this build.** The entire V2 delta — roster, two flows, two agent actions, the
@@ -89,23 +89,23 @@ I scored Salesforce's "robust documentation" claim live while building, logging
 every question I had to ask of the docs and whether they answered it. Full
 detail with commands and error text in `docs/build-journal.md`.
 
-**30 questions across 8 tasks:**
+**33 questions across 9 tasks:**
 
 | Verdict | Count |
 |---|---|
-| **answered** — docs solved it | 16 (53%) |
-| **partial** — docs plus trial-and-error | 4 (13%) |
-| **failed** — docs wrong, absent, or misleading | 9 (30%) |
-| **failed, then answered** — docs sent me the wrong way, the org corrected them | 1 (3%) |
+| **answered** — docs solved it | 17 (52%) |
+| **partial** — docs plus trial-and-error | 4 (12%) |
+| **failed** — docs wrong, absent, or misleading | 10 (30%) |
+| **failed, then answered** — docs sent me the wrong way, the org corrected them | 2 (6%) |
 
-Two of the nine failures are not really Salesforce's: one was a local
+Two of the ten failures are not really Salesforce's: one was a local
 `FORCE_COLOR` shell quirk, one was a defect in this build's own plan caught by
-code review. **Seven hard documentation failures remain, and all seven are on
+code review. **Eight hard documentation failures remain, and all eight are on
 the `sf agent` / `AiAuthoringBundle` surface.**
 
 | Surface | Rows | answered | partial | failed |
 |---|---|---|---|---|
-| `sf agent` + `AiAuthoringBundle` | 22 | 11 | 3 | 7 (+1 hybrid) |
+| `sf agent` + `AiAuthoringBundle` | 25 | 12 | 3 | 8 (+2 hybrid) |
 | Flows, Bulk API, Apex | 8 | 5 | 1 | 2 (neither a real docs gap) |
 
 **Best moment:** `sf agent test`. All four commands describe the full lifecycle
@@ -123,19 +123,31 @@ the deploy ID out of the *error* payload and cross-querying the org. An exit
 code that lies is worse than a missing flag, because CI is built to trust
 exactly that signal.
 
+**The same pattern, one layer deeper — and the costliest finding in the build.**
+Fixing a routing bug in Task 9 meant editing the router's instructions,
+publishing, activating, and testing. `publish` and `activate` both reported
+success the instant their metadata deploy landed, but the classifier model
+behind the router took several more minutes to actually honor the change: four
+consecutive publish-activate-test cycles reproduced the original bug before a
+fifth attempt — no new publish, just elapsed time — finally passed. Nothing in
+any command's output distinguishes "activated" from "the router now reflects
+your edit." Four rounds of the fix were chased before the real variable turned
+out to be the clock.
+
 **Runner-up, and worse for a newcomer:** the CLI's own interactive
 `generate test-spec` wizard offers org-suffixed topic and action names that the
 runtime evaluator can never match — it compares against short local developer
 names. Following the tool's own suggestions builds a permanently-failing test
 suite. Found by reading the installed plugin's source.
 
-**Three other findings worth carrying into any customer conversation:**
+**Four other findings worth carrying into any customer conversation:**
 `AiAuthoringBundle` cannot be retrieved or deployed through the Metadata API at
 any API version this org supports (`sf agent publish` is the only working path);
 the bundle's folder name must equal the `developer_name` compiled from inside
-the `.agent` file, and `-n/--api-name` is ignored for that lookup; and Bulk API
-CSV line-ending auto-detection misfires on CRLF, requiring an explicit
-`--line-ending CRLF`.
+the `.agent` file, and `-n/--api-name` is ignored for that lookup; the agent
+test spec's `description` field has an undocumented 255-character server-side
+cap that fails with `data value too large`; and Bulk API CSV line-ending
+auto-detection misfires on CRLF, requiring an explicit `--line-ending CRLF`.
 
 None of these are reasons not to build this way. They are the reasons a customer
 wants a partner who has already hit them.
@@ -168,8 +180,8 @@ users. Expected, intentional, and on the record. Contrast the V1 experience,
 where the same grant was applied through a UI menu and nobody could later
 determine whether it was the fix that worked.
 
-**Immutable, committed versions.** BotVersion 3 is `Active`; v1 and v2 remain
-`Inactive`. Only one version can be active at a time. The active version's
+**Immutable, committed versions.** BotVersion 7 is `Active`; v1 through v6
+remain `Inactive`. Only one version can be active at a time. The active version's
 source is in this repo, and publishing a new one is an explicit command that
 leaves a commit behind.
 
