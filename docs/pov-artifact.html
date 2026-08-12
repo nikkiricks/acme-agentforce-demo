@@ -14,10 +14,18 @@
     --accent:     #0E6E72;
     --accent-soft:rgba(14,110,114,0.10);
 
+    /* Status marks — meter fills and diff grounds. Validated with the dataviz
+       validator against this page's own light surface: ALL CHECKS PASS. */
     --ok:      #0F7D57;
     --warn:    #C07E00;
     --bad:     #A32B1E;
     --neutral: #6B726C;
+    /* Status text — same hues, stepped for WCAG AA on small uppercase labels
+       (the mark steps' amber is only 3.3:1 on this surface). */
+    --ok-t:      #0A6A4A;
+    --warn-t:    #8A5A00;
+    --bad-t:     #94261A;
+    --neutral-t: #5A615C;
 
     --add-bg:  rgba(15,125,87,0.08);
     --del-bg:  rgba(163,43,30,0.06);
@@ -42,13 +50,19 @@
       --accent:     #4FB6BA;
       --accent-soft:rgba(79,182,186,0.13);
 
-      --ok:      #3FA97C;
-      --warn:    #D6A02A;
-      --bad:     #E5786A;
+      /* Status marks, dark steps — re-derived so the validator's hard gates
+         (lightness band, normal-vision floor) pass on the dark surface too. */
+      --ok:      #25A97B;
+      --warn:    #B68913;
+      --bad:     #C34E54;
       --neutral: #8C948D;
+      --ok-t:      #4FC79A;
+      --warn-t:    #D8A93A;
+      --bad-t:     #E8837F;
+      --neutral-t: #A0A89F;
 
-      --add-bg:  rgba(63,169,124,0.11);
-      --del-bg:  rgba(229,120,106,0.09);
+      --add-bg:  rgba(37,169,123,0.12);
+      --del-bg:  rgba(195,78,84,0.10);
     }
   }
 
@@ -64,13 +78,17 @@
     --accent:     #4FB6BA;
     --accent-soft:rgba(79,182,186,0.13);
 
-    --ok:      #3FA97C;
-    --warn:    #D6A02A;
-    --bad:     #E5786A;
+    --ok:      #25A97B;
+    --warn:    #B68913;
+    --bad:     #C34E54;
     --neutral: #8C948D;
+    --ok-t:      #4FC79A;
+    --warn-t:    #D8A93A;
+    --bad-t:     #E8837F;
+    --neutral-t: #A0A89F;
 
-    --add-bg:  rgba(63,169,124,0.11);
-    --del-bg:  rgba(229,120,106,0.09);
+    --add-bg:  rgba(37,169,123,0.12);
+    --del-bg:  rgba(195,78,84,0.10);
   }
 
   * { box-sizing: border-box; }
@@ -226,7 +244,7 @@
     display: block;
     margin-top: 0.4rem;
   }
-  .stat-n.is-ok { color: var(--ok); }
+  .stat-n.is-ok { color: var(--ok-t); }
 
   /* ---- the diff: V1 failure -> V2 antidote ---- */
   .diff { display: flex; flex-direction: column; gap: 1.35rem; }
@@ -252,8 +270,8 @@
     line-height: 1.6;
     user-select: none;
   }
-  .row.del .sign { color: var(--bad); }
-  .row.add .sign { color: var(--ok); }
+  .row.del .sign { color: var(--bad-t); }
+  .row.add .sign { color: var(--ok-t); }
   .row .txt { min-width: 0; }
   .row .lbl {
     font-family: var(--font-mono);
@@ -263,8 +281,8 @@
     display: block;
     margin-bottom: 0.15rem;
   }
-  .row.del .lbl { color: var(--bad); }
-  .row.add .lbl { color: var(--ok); }
+  .row.del .lbl { color: var(--bad-t); }
+  .row.add .lbl { color: var(--ok-t); }
   .artifact {
     display: block;
     font-family: var(--font-mono);
@@ -307,10 +325,10 @@
     border-radius: 2px;
     white-space: nowrap;
   }
-  .pill.ok { color: var(--ok); }
-  .pill.warn { color: var(--warn); }
-  .pill.bad { color: var(--bad); }
-  .pill.neu { color: var(--neutral); }
+  .pill.ok { color: var(--ok-t); }
+  .pill.warn { color: var(--warn-t); }
+  .pill.bad { color: var(--bad-t); }
+  .pill.neu { color: var(--neutral-t); }
 
   /* ---- proportion meter: 30 questions, four verdicts ---- */
   .meter {
