@@ -1,14 +1,18 @@
 # Demo tests — the triage ladder as a repeatable suite
 
-The 4-question demo ladder, expressed as a CLI-runnable Agentforce agent test
+The 5-question demo ladder, expressed as a CLI-runnable Agentforce agent test
 suite (`AiEvaluationDefinition`, "testing-center" runner) instead of a
 click-through-and-eyeball manual script. Spec source of truth:
 `tests/agent/acme-triage-testspec.yaml`. Deployed metadata:
 `force-app/main/default/aiEvaluationDefinitions/Acme_Enterprise_Triage_Ladder.aiEvaluationDefinition-meta.xml`.
 
+Case 5 was added in Task 9 as a regression test for a router misclassification
+found in live preview; see "Task 9 — outreach routing fix" below.
+
 ## Agent under test
 
-- Bot: `Acme_Enterprise` (label "Acme Enterprise"), live on BotVersion 3.
+- Bot: `Acme_Enterprise` (label "Acme Enterprise"), live on BotVersion 7 (was
+  BotVersion 3 before the Task 9 router fix).
 - Topic exercised: `candidate_screening`. The org's full/suffixed
   `GenAiPluginDefinition` developer name is `candidate_screening_16jbm000002K4hR`
   (confirmed live via Tooling API query, not guessed) — but the test
@@ -64,7 +68,7 @@ Each test case is judged on three kinds of expectations:
   `actual: $.generatedData.outcome` JSONPath reference errored server-side
   on every case. See "Iteration note" below and journal row 6.
 
-## The 4 ladder cases
+## The 5 ladder cases
 
 ### 1. Candidate count
 - **Utterance:** "How many candidates have applied?"
@@ -93,7 +97,73 @@ Each test case is judged on three kinds of expectations:
   person instead of nothing.
 - **Expected:** response is an email naming Elena Vasquez or Maria Gonzalez.
 
-## Last run — 2026-08-11
+### 5. Outreach email, cold start (Task 9 regression test)
+- **Utterance:** "Draft a short outreach email to Elena Vasquez."
+- **Setup:** no `conversationHistory` — a brand-new conversation, unlike case
+  4. This is the exact utterance the user reported in live preview as being
+  misrouted to `off_topic`.
+- **Expected:** topic `candidate_screening`; action `GetCandidateProfiles`
+  invoked (the profile isn't already in context, so the agent must fetch it);
+  response is a short, professional outreach email naming Elena Vasquez,
+  grounded in her profile (Staff Software Engineer, React/TypeScript platform
+  rebuild, logistics domain).
+
+## Task 9 — outreach routing fix (2026-08-11)
+
+**Bug report (live preview, BotVersion 3):** "Draft a short outreach email to
+Elena Vasquez" was classified by `agent_router` as off-topic and landed in the
+`off_topic` subagent — `candidate_screening` never saw it.
+
+**Fix:** in `Acme_Enterprise.agent`, added an outreach-routing rule to
+`agent_router`'s `reasoning.instructions`, a matching "Recruiter Outreach"
+instruction block to `candidate_screening`'s `reasoning.instructions`
+(call `GetCandidateProfiles` if the profile isn't already in context; keep
+outreach grounded in real profile facts, never invented), and — per
+Salesforce's own documented pattern for router `description:` fields driving
+subagent selection — a `description:` on the `go_to_candidate_screening` and
+`go_to_off_topic` transition actions inside `agent_router`, plus an expanded
+top-level `description:` on the `candidate_screening` subagent itself
+mentioning outreach. See `docs/build-journal.md` row 9 for the full
+investigation, including a real finding: none of these edits, individually or
+combined, changed the router's live behavior in the first four
+publish-activate-test cycles immediately following each change — the fix
+only started reliably passing once enough wall-clock time had elapsed since
+activation, pointing to asynchronous classifier reindexing lag on
+`model://sfdc_ai__DefaultEinsteinHyperClassifier`, not a text/wording problem.
+Confirmed by a temporary diagnostic test case (same already-active
+BotVersion, no new publish) that passed after the wait, where four
+back-to-back runs immediately post-activate had failed identically.
+
+New BotVersion **7**, activated, live. Regression test case 5 added to
+`tests/agent/acme-triage-testspec.yaml`, `AiEvaluationDefinition` re-created,
+full suite re-run clean.
+
+Job ID `4KBbm00000033FtGAI`, run via `sf agent test run --api-name
+Acme_Enterprise_Triage_Ladder -o renewal-org --wait 10 --verbose`. Completed
+clean (`Status: COMPLETED`) in 21s.
+
+| Case | Utterance | Topic | Action | Outcome (LLM judge) | Overall |
+|---|---|---|---|---|---|
+| 1 | How many candidates have applied? | Pass | Pass (`CountCandidates`) | **Pass** — "There are 25 candidates currently on file..." | **PASS** |
+| 2 | Who has applied to the Senior Full-Stack Engineer role? | Pass | Pass (`GetCandidateProfiles`) | **Fail** — agent asked for the job description instead of naming candidates (known standing finding, unchanged by Task 9 — see below) | **FAIL (outcome only)** |
+| 3 | Screen all candidates on file for: Senior Full-Stack Engineer, Northwind logistics platform... | Pass | Pass (`GetCandidateProfiles`) | **Pass** — ranked list led by Elena Vasquez | **PASS** |
+| 4 | Draft a short outreach email to the strongest candidate. (continuation of case 3's context) | Pass | Pass (`GetCandidateProfiles`) | **Pass** — email named Elena Vasquez as the strongest match and referenced the role | **PASS** |
+| 5 | Draft a short outreach email to Elena Vasquez. (cold start, no prior context) | **Pass** (was `off_topic` pre-fix) | **Pass** (`GetCandidateProfiles`, was `[]` pre-fix) | **Pass** — short professional email to Elena Vasquez grounded in her Staff Software Engineer / React-TypeScript / logistics profile | **PASS** |
+
+**Aggregate:** Topic Pass 100% (5/5), Action Pass 100% (5/5), Outcome Pass
+80% (4/5). Case 2 is the sole outcome failure and is a **known standing
+finding, not a regression** — out of scope for Task 9 per the brief; do not
+chase it.
+
+Note on case 4 stability: across repeated re-runs during this task's
+verification, the LLM judge scored case 4's outcome anywhere from 2 to 5 (the
+email consistently addresses the candidate as "Hi Elena," first name only,
+never the surname) — this is judge nondeterminism on borderline output, not a
+router regression; a single run landing at score 2 (`FAIL`) was observed and
+resolved to a clean pass on immediate re-run with zero code changes. Treat
+case 4 as borderline-but-generally-passing, same caveat as before Task 9.
+
+## Run history — pre-Task-9 baseline (2026-08-11)
 
 Job ID `4KBbm00000032tJGAQ`, run via `sf agent test run --api-name
 Acme_Enterprise_Triage_Ladder -o renewal-org --wait 10 --verbose`. Completed
@@ -148,16 +218,18 @@ variable-output cases).
 
 ## Manual fallback (no CLI test framework)
 
-If `sf agent test` is ever unusable in this org/edition, the same 4 cases can
+If `sf agent test` is ever unusable in this org/edition, the same 5 cases can
 be run by hand through `sf agent preview`:
 
 ```bash
 sf agent preview -n Acme_Enterprise -o renewal-org --use-live-actions
 ```
 
-Then paste each of the 4 utterances above in order (case 4 right after case
+Then paste each of the 5 utterances above in order (case 4 right after case
 3, in the same session, so the agent has "the strongest candidate" in
-context) and eyeball the same pass criteria listed above. `sf agent preview`
+context; case 5 works in any session, including a brand-new one — it's a
+cold-start case by design) and eyeball the same pass criteria listed above.
+`sf agent preview`
 does not require a separately linked client app for a published/activated
 agent — `--api-name`/`-n` plus `--use-live-actions` is sufficient once a
 BotVersion is Active (confirmed in this session).

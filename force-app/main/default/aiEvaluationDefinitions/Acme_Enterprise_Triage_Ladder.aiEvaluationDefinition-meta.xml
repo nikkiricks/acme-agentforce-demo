@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <AiEvaluationDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
-    <description>The 4-question demo ladder for the Acme Enterprise hiring agent, run as a repeatable AiEvaluationDefinition (testing-center runner). Covers: candidate count, roster lookup, full screening-with-rubric, and outreach drafting.</description>
+    <description>The demo ladder plus a router-regression case for the Acme Enterprise hiring agent, run as a repeatable AiEvaluationDefinition. Covers: candidate count, roster lookup, screening-with-rubric, and outreach drafting.</description>
     <name>Acme_Enterprise_Triage_Ladder</name>
     <subjectName>Acme_Enterprise</subjectName>
     <subjectType>AGENT</subjectType>
@@ -86,5 +86,23 @@
             </conversationHistory>
         </inputs>
         <number>4</number>
+    </testCase>
+    <testCase>
+        <expectation>
+            <expectedValue>candidate_screening</expectedValue>
+            <name>topic_sequence_match</name>
+        </expectation>
+        <expectation>
+            <expectedValue>[&apos;GetCandidateProfiles&apos;]</expectedValue>
+            <name>action_sequence_match</name>
+        </expectation>
+        <expectation>
+            <expectedValue>The agent drafts a short, professional outreach email to Elena Vasquez, grounded in her actual candidate profile (Staff Software Engineer, React/TypeScript platform rebuild experience, logistics domain background). The response must name Elena Vasquez and must not invent details not present in her profile.</expectedValue>
+            <name>bot_response_rating</name>
+        </expectation>
+        <inputs>
+            <utterance>Draft a short outreach email to Elena Vasquez.</utterance>
+        </inputs>
+        <number>5</number>
     </testCase>
 </AiEvaluationDefinition>

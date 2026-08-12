@@ -117,7 +117,7 @@ The demo ladder is a versioned test suite, not a script someone retypes.
 cat tests/agent/acme-triage-testspec.yaml
 ```
 
-**Say:** "Four utterances, versioned in the repo. Each is scored three ways: did
+**Say:** "Five utterances, versioned in the repo. Each is scored three ways: did
 it land in the right topic, did it fire the right flow-backed action, and an
 LLM judge against a written expectation."
 
@@ -125,19 +125,20 @@ LLM judge against a written expectation."
 sf agent test run --api-name Acme_Enterprise_Triage_Ladder -o renewal-org --wait 10
 ```
 
-Last clean run (job `4KBbm00000032tJGAQ`) completed in **21 seconds**. Expected
-result: **Topic 4/4, Action 4/4, Outcome 3/4.**
+Last clean run (job `4KBbm00000033FtGAI`) completed in **21 seconds**. Expected
+result: **Topic 5/5, Action 5/5, Outcome 4/5.**
 
-### The four utterances, verbatim, with expected beats
+### The five utterances, verbatim, with expected beats
 
 | # | Utterance | Expected beat |
 |---|---|---|
 | 1 | `How many candidates have applied?` | Topic `candidate_screening`, action `CountCandidates` fires, answer contains **25** — live from CRM |
 | 2 | `Who has applied to the Senior Full-Stack Engineer role?` | Topic and action **pass**; outcome **fails** — the agent asks for a job description instead of listing names. This is a known finding, not a regression |
 | 3 | `Screen all candidates on file for: Senior Full-Stack Engineer, Northwind logistics platform. Requirements: 5+ years, React/TypeScript, Node services, AWS.` | Ranked top-5 led by **Elena Vasquez (98/100)**, ⚠ human-review flags, and named AI-padded resumes (**Tyler Brooks**, **Chloe Nakamura**) |
-| 4 | `Draft a short outreach email to the strongest candidate.` | Email addressed to **Elena** — note: first name only. The judge scored this 3/5 and flagged that the surname never appears. Do not promise a full-name match |
+| 4 | `Draft a short outreach email to the strongest candidate.` | Email addressed to **Elena** — note: first name only, judge score varies 2-5 run to run. Do not promise a full-name match |
+| 5 | `Draft a short outreach email to Elena Vasquez.` | Cold start, no prior context — the Task 9 router-fix regression case. Topic `candidate_screening`, action `GetCandidateProfiles` fires, email names Elena Vasquez, grounded in her profile |
 
-**Own case 2 out loud — do not skip past it.** "Three of four pass. Case two is
+**Own case 2 out loud — do not skip past it.** "Four of five pass. Case two is
 a real product finding: without a rubric the agent asks for the job description
 instead of just listing who's on file. That's a prompt-tuning follow-up, and I'd
 rather show you the suite that catches it than a demo where nobody would ever
@@ -181,7 +182,7 @@ one.
 Show the last known-good results and speak beat 4 from the table above:
 
 ```bash
-sf agent test results --job-id 4KBbm00000032tJGAQ -o renewal-org --verbose
+sf agent test results --job-id 4KBbm00000033FtGAI -o renewal-org --verbose
 ```
 
 `-i/--job-id` is required. `--use-most-recent` appears in the command's own help
@@ -194,8 +195,8 @@ with the command above. Same pattern as `sf agent publish`. **Never trust a
 non-zero exit from these two commands without re-querying.**
 
 **The test framework is unusable entirely.** Fall back to live preview and paste
-the four utterances in order (case 4 immediately after case 3, same session, so
-"the strongest candidate" has context):
+the five utterances in order (case 4 immediately after case 3, same session, so
+"the strongest candidate" has context; case 5 works cold, in any session):
 
 ```bash
 sf agent preview -n Acme_Enterprise -o renewal-org --use-live-actions
@@ -224,10 +225,10 @@ before the call starts, and `docs/pov-brief.md` open as the long form.
 - [ ] `bash scripts/verify-roster.sh` returns 25.
 - [ ] `sf apex run test --tests SecurityBeatTest` returns 2/2.
 - [ ] `sf agent test run --api-name Acme_Enterprise_Triage_Ladder --wait 10`
-      returns Topic 4/4, Action 4/4, Outcome 3/4. Record the new job ID here and
+      returns Topic 5/5, Action 5/5, Outcome 4/5. Record the new job ID here and
       in the fallback command above.
 - [ ] `sf data query -q "SELECT VersionNumber, Status FROM BotVersion WHERE BotDefinition.DeveloperName = 'Acme_Enterprise'"`
-      shows **v3 Active**.
+      shows **v7 Active**.
 - [ ] Artifact URL pasted somewhere reachable without the terminal.
 - [ ] Terminal font size raised; scrollback cleared; `git log --oneline -10`
       already scrolled to.

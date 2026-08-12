@@ -1,0 +1,14 @@
+{
+  "required" : [ "requestNote" ],
+  "unevaluatedProperties" : false,
+  "properties" : {
+    "requestNote" : {
+      "title" : "Request Note",
+      "description" : "Request Note",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    }
+  },
+  "lightning:type" : "lightning__objectType"
+}

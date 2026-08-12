@@ -1,8 +1,8 @@
 name: Acme_Enterprise_Triage_Ladder
 description: >-
-  The 4-question demo ladder for the Acme Enterprise hiring agent, run as a
-  repeatable AiEvaluationDefinition (testing-center runner). Covers: candidate
-  count, roster lookup, full screening-with-rubric, and outreach drafting.
+  The demo ladder plus a router-regression case for the Acme Enterprise
+  hiring agent, run as a repeatable AiEvaluationDefinition. Covers: candidate
+  count, roster lookup, screening-with-rubric, and outreach drafting.
 subjectType: AGENT
 subjectName: Acme_Enterprise
 testCases:
@@ -61,3 +61,16 @@ testCases:
     expectedOutcome: >-
       The agent drafts a short outreach email. The response must name Elena
       Vasquez or Maria Gonzalez as the recipient/subject of the email.
+
+  # Case 5: outreach email routing regression — router misclassified this as
+  # off-topic before the Task 9 fix (no prior screening context, cold start)
+  - utterance: Draft a short outreach email to Elena Vasquez.
+    expectedTopic: candidate_screening
+    expectedActions:
+      - GetCandidateProfiles
+    expectedOutcome: >-
+      The agent drafts a short, professional outreach email to Elena Vasquez,
+      grounded in her actual candidate profile (Staff Software Engineer,
+      React/TypeScript platform rebuild experience, logistics domain
+      background). The response must name Elena Vasquez and must not invent
+      details not present in her profile.

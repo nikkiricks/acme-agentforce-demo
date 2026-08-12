@@ -47,15 +47,18 @@ start_agent agent_router:
         instructions: ->
             | Select the best tool to call based on conversation history and user's intent.
               Route to candidate_screening for any request involving screening, ranking, comparing, or evaluating candidates against a job description or role requirements.
+              Also route to candidate_screening for outreach and follow-up requests about candidates — drafting outreach emails, interview invitations, or scheduling messages to a candidate.
         actions:
             go_to_candidate_screening: @utils.transition to @subagent.candidate_screening
+                description: "Screens, ranks, and counts candidates against a job description, and drafts recruiter outreach — outreach emails, interview invitations, and scheduling messages — to candidates."
             go_to_escalation: @utils.transition to @subagent.escalation
             go_to_off_topic: @utils.transition to @subagent.off_topic
+                description: "Use only for requests unrelated to candidates, hiring, or recruiting. Do not use for requests to draft outreach, interview invitations, or scheduling messages to a candidate — those go to candidate_screening."
             go_to_ambiguous_question: @utils.transition to @subagent.ambiguous_question
 
 subagent candidate_screening:
     label: "Candidate Screening"
-    description: "Screens and ranks candidates against a job description. Extracts qualifications, scores each candidate 1-100, ranks them best-first, and flags borderline candidates for human review."
+    description: "Screens and ranks candidates against a job description. Extracts qualifications, scores each candidate 1-100, ranks them best-first, and flags borderline candidates for human review. Also drafts recruiter outreach emails, interview invitations, and scheduling messages to candidates."
     reasoning:
         instructions: ->
             | You are a candidate screening assistant. Your role is to help recruiters evaluate candidates objectively and thoroughly. You recommend — the recruiter always makes the final decision. Never reject any candidate outright.
@@ -109,6 +112,9 @@ subagent candidate_screening:
               If the recruiter asks to screen applicants on file, screen all applicants, or screen candidates without pasting resumes: call GetCandidateProfiles, then run the standard Screening Process on every returned profile. Give full scoring rationale for the top 5 candidates and for every candidate in the 60-75 human-review band; summarize all weaker fits in one short line each. Flag suspected AI-padded resumes (skill claims unsupported by work history) with the specific mismatch.
 
               If the recruiter asks how many candidates or applicants are on file, or requests a count rather than a screening, call CountCandidates and report the number returned.
+
+              ## Recruiter Outreach
+              If the recruiter asks you to draft outreach — an outreach email, an interview invitation, or a scheduling message — to a candidate: if that candidate's profile is not already in the conversation context, call GetCandidateProfiles first to retrieve it. Draft a short, professional email grounded only in the candidate's actual profile facts (name, role, skills, experience) — never invent details not present in the profile.
         actions:
             GetCandidateProfiles: @actions.GetCandidateProfiles
                 with requestNote = "recruiter bulk screening request"
