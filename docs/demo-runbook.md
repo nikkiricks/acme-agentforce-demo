@@ -125,15 +125,18 @@ LLM judge against a written expectation."
 sf agent test run --api-name Acme_Enterprise_Triage_Ladder -o renewal-org --wait 10
 ```
 
-Last clean run (job `4KBbm00000033FtGAI`) completed in **21 seconds**. Expected
-result: **Topic 5/5, Action 5/5, Outcome 4/5.**
+Last clean run (job `4KBbm00000033qzGAA`, 2026-08-12) completed in **29 seconds**:
+**Topic 5/5, Action 4/5, Outcome 4/5** — cases 1, 3, 4, 5 fully green; case 2 red on
+action + outcome (same standing finding, expressed one layer earlier). Realistic
+expectation across runs: **Topic 5/5, Action 4–5/5, Outcome 3–4/5** — case 2 is always
+red somewhere, and case 4's judge is volatile. Say the range, not a single number.
 
 ### The five utterances, verbatim, with expected beats
 
 | # | Utterance | Expected beat |
 |---|---|---|
 | 1 | `How many candidates have applied?` | Topic `candidate_screening`, action `CountCandidates` fires, answer contains **25** — live from CRM |
-| 2 | `Who has applied to the Senior Full-Stack Engineer role?` | Topic and action **pass**; outcome **fails** — the agent asks for a job description instead of listing names. This is a known finding, not a regression |
+| 2 | `Who has applied to the Senior Full-Stack Engineer role?` | Topic **passes**; the agent asks for a job description instead of listing names, so outcome **fails** and the action assertion fails on some runs too (it may not call the flow at all). Known finding, not a regression |
 | 3 | `Screen all candidates on file for: Senior Full-Stack Engineer, Northwind logistics platform. Requirements: 5+ years, React/TypeScript, Node services, AWS.` | Ranked top-5 led by **Elena Vasquez (98/100)**, ⚠ human-review flags, and named AI-padded resumes (**Tyler Brooks**, **Chloe Nakamura**) |
 | 4 | `Draft a short outreach email to the strongest candidate.` | Email addressed to **Elena** — note: first name only, judge score varies 2-5 run to run. Do not promise a full-name match |
 | 5 | `Draft a short outreach email to Elena Vasquez.` | Cold start, no prior context — the Task 9 router-fix regression case. Topic `candidate_screening`, action `GetCandidateProfiles` fires, email names Elena Vasquez, grounded in her profile |
@@ -190,7 +193,7 @@ import again; delete the extras or just say the real number.
 Show the last known-good results and speak beat 4 from the table above:
 
 ```bash
-sf agent test results --job-id 4KBbm00000033FtGAI -o renewal-org --verbose
+sf agent test results --job-id 4KBbm00000033qzGAA -o renewal-org --verbose
 ```
 
 `-i/--job-id` is required. `--use-most-recent` appears in the command's own help
@@ -233,7 +236,7 @@ before the call starts, and `docs/pov-brief.md` open as the long form.
 - [ ] `bash scripts/verify-roster.sh` returns 25.
 - [ ] `sf apex run test --tests SecurityBeatTest` returns 2/2.
 - [ ] `sf agent test run --api-name Acme_Enterprise_Triage_Ladder --wait 10`
-      returns Topic 5/5, Action 5/5, Outcome 4/5. Record the new job ID here and
+      returns Topic 5/5, Action 4–5/5, Outcome 3–4/5 (case 2 red is expected). Record the new job ID here and
       in the fallback command above.
 - [ ] `sf data query -q "SELECT VersionNumber, Status FROM BotVersion WHERE BotDefinition.DeveloperName = 'Acme_Enterprise'"`
       shows **v7 Active**.
