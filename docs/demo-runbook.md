@@ -35,8 +35,11 @@ this agent exists anywhere except in this history."
 Then the diff that matters:
 
 ```bash
-git show 765dc08 -M -- '*aiAuthoringBundles*'
+git show ':/actions wired' -M -- '*aiAuthoringBundles*'
 ```
+
+(`:/actions wired` finds the wiring commit by message text, so the command works in
+this repo and in the standalone `acme-agentforce-demo` split, whose SHAs differ.)
 
 **Say:** "This is the agent's brain, as a diff." Point at three things and move
 on — do not read it aloud:
