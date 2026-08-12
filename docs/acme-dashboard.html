@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Acme Talent Console</title>
+<style>
+  :root {
+    --paper:      #f4f5f8;
+    --surface:    #ffffff;
+    --surface-2:  #f8f9fb;
+    --ink:        #101623;
+    --ink-2:      #545c6e;
+    --ink-3:      #8a91a1;
+    --rule:       #e3e6ec;
+    --rule-firm:  #c9cedb;
+    --brand:      #12284b;   /* Acme navy */
+    --brand-ink:  #ffffff;
+    --accent:     #e8590c;   /* freight orange — brand chrome only, never status */
+    --accent-ink: #b54708;
+
+    /* status (validated reference palette; always icon + label, never color alone) */
+    --ok:       #0ca30c;  --ok-text:       #006300;  --ok-bg:       rgba(12,163,12,0.10);
+    --warn:     #fab219;  --warn-text:     #8a5a00;  --warn-bg:     rgba(250,178,25,0.16);
+    --serious:  #ec835a;  --serious-text:  #9c3d16;  --serious-bg:  rgba(236,131,90,0.14);
+    --critical: #d03b3b;  --critical-text: #a32b1e;  --critical-bg: rgba(208,59,59,0.10);
+    --neutral-text: #5a6272; --neutral-bg: rgba(84,92,110,0.10);
+
+    --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { color-scheme: light; }
+  body {
+    font-family: var(--sans);
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  /* ---------- top bar ---------- */
+  .topbar {
+    background: var(--brand);
+    color: var(--brand-ink);
+    display: flex; align-items: center; gap: 2rem;
+    padding: 0 1.5rem;
+    height: 56px;
+  }
+  .logo { display: flex; align-items: center; gap: .65rem; }
+  .logo-mark {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: var(--accent);
+    display: grid; place-items: center;
+    font-weight: 800; font-size: 15px; color: #fff;
+  }
+  .wordmark { font-weight: 700; letter-spacing: .14em; font-size: .8rem; }
+  .wordmark small { display: block; font-weight: 400; letter-spacing: .04em; font-size: .68rem; color: #a8b4c9; }
+  .topnav { display: flex; gap: .25rem; margin-left: .5rem; }
+  .topnav a {
+    color: #c4cddd; text-decoration: none; font-size: .85rem;
+    padding: .35rem .75rem; border-radius: 6px;
+  }
+  .topnav a:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .topnav a[aria-current] {
+    color: #fff; font-weight: 600;
+    background: rgba(255,255,255,0.10);
+    box-shadow: inset 0 -2px 0 var(--accent);
+  }
+  .topbar .who { margin-left: auto; display: flex; align-items: center; gap: .6rem; font-size: .85rem; color: #d7deea; }
+  .avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: #2c4571; color: #fff;
+    display: grid; place-items: center; font-size: .8rem; font-weight: 600;
+  }
+
+  main { max-width: 1080px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
+
+  /* ---------- screening assistant ---------- */
+  .assist { margin-top: 1.25rem; padding: 0; overflow: hidden; }
+  .assist-head {
+    display: flex; align-items: center; gap: .6rem;
+    padding: .7rem 1.15rem; border-bottom: 1px solid var(--rule);
+    background: var(--surface-2);
+  }
+  .assist-head .agent-avatar {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: var(--brand); color: #fff;
+    display: grid; place-items: center; font-size: .95rem;
+  }
+  .assist-head .titles .t1 { font-size: .88rem; font-weight: 650; }
+  .assist-head .titles .t2 { font-size: .72rem; color: var(--ink-3); }
+  .assist-head .live { margin-left: auto; display: inline-flex; align-items: center; gap: .4rem; font-size: .74rem; color: var(--ink-2); }
+  .msgs { max-height: 300px; overflow-y: auto; padding: 1rem 1.15rem; display: flex; flex-direction: column; gap: .6rem; }
+  .msg { max-width: 72%; padding: .55rem .8rem; border-radius: 12px; font-size: .86rem; }
+  .msg.agent { align-self: flex-start; background: var(--surface-2); border: 1px solid var(--rule); border-bottom-left-radius: 4px; }
+  .msg.user  { align-self: flex-end; background: var(--brand); color: #fff; border-bottom-right-radius: 4px; }
+  .msg.typing { color: var(--ink-3); font-style: italic; }
+  .sugg { display: flex; flex-wrap: wrap; gap: .4rem; padding: 0 1.15rem .75rem; }
+  .sugg button {
+    font-size: .76rem; color: var(--brand); background: var(--surface);
+    border: 1px solid var(--rule-firm); border-radius: 999px; padding: .25rem .7rem; cursor: pointer;
+  }
+  .sugg button:hover { border-color: var(--brand); }
+  .assist-input { display: flex; gap: .5rem; padding: .75rem 1.15rem; border-top: 1px solid var(--rule); }
+  .assist-input input {
+    flex: 1; font: inherit; font-size: .88rem; color: var(--ink);
+    border: 1px solid var(--rule-firm); border-radius: 8px; padding: .5rem .75rem;
+    background: var(--surface);
+  }
+  .assist-input input:focus-visible, .sugg button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  /* ---------- requisition header ---------- */
+  .req { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1rem; margin: .75rem 0 1.25rem; }
+  .req h1 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.01em; }
+  .req .sub { color: var(--ink-2); font-size: .85rem; margin-top: .15rem; }
+  .req-tags { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .55rem; }
+  .tag {
+    font-size: .74rem; color: var(--ink-2);
+    border: 1px solid var(--rule-firm); border-radius: 999px;
+    padding: .1rem .6rem; background: var(--surface);
+  }
+  .req .agent-run {
+    margin-left: auto; text-align: right; font-size: .74rem; color: var(--ink-3);
+    max-width: 100%; overflow-wrap: anywhere;
+  }
+  .agent-run .badge {
+    display: inline-flex; align-items: center; gap: .4rem;
+    font-size: .76rem; color: var(--ink-2);
+    background: var(--surface); border: 1px solid var(--rule-firm);
+    border-radius: 999px; padding: .2rem .7rem; margin-bottom: .3rem;
+  }
+  .agent-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
+  .mono { font-family: var(--mono); }
+
+  /* ---------- KPI tiles ---------- */
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: .75rem; margin-bottom: 1.25rem; }
+  .kpi {
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 10px;
+    padding: .9rem 1rem;
+  }
+  .kpi .label { font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-3); }
+  .kpi .value { font-size: 1.9rem; font-weight: 700; letter-spacing: -0.02em; margin-top: .1rem; }
+  .kpi .value .unit { font-size: 1rem; font-weight: 500; color: var(--ink-3); }
+  .kpi .note { font-size: .76rem; color: var(--ink-2); margin-top: .1rem; }
+  .kpi .note.warn-note { color: var(--warn-text); }
+  .kpi .note.crit-note { color: var(--critical-text); }
+
+  /* ---------- cards & sections ---------- */
+  section { margin-bottom: 1.25rem; }
+  .card {
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 10px;
+    padding: 1rem 1.15rem;
+  }
+  .card h2, section > h2 {
+    font-size: .8rem; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--ink-2); font-weight: 650; margin-bottom: .75rem;
+  }
+  section > h2 { margin-bottom: .6rem; }
+  .card .src { float: right; font-size: .7rem; color: var(--ink-3); font-family: var(--mono); text-transform: none; letter-spacing: 0; }
+
+  /* ---------- rubric band rail (signature) ---------- */
+  .band { display: grid; grid-template-columns: 150px 1fr; border-top: 1px solid var(--rule); }
+  .band:last-child { border-bottom: 0; }
+  .band-key { padding: .7rem .5rem .7rem 0; border-right: 3px solid var(--rule-firm); }
+  .band.b-exceptional .band-key { border-right-color: var(--ok); }
+  .band.b-review     .band-key { border-right-color: var(--warn); }
+  .band.b-flag       .band-key { border-right-color: var(--critical); }
+  .band-key .range { font-family: var(--mono); font-size: .82rem; font-weight: 600; }
+  .band-key .name  { font-size: .74rem; color: var(--ink-2); }
+  .band-chips { display: flex; flex-wrap: wrap; gap: .45rem; align-content: flex-start; padding: .7rem 0 .7rem 1rem; min-width: 0; }
+  .kpi, .card, .cols > *, .stack > * { min-width: 0; }
+  .chip {
+    display: inline-flex; align-items: center; gap: .4rem;
+    font-size: .8rem; border-radius: 999px; padding: .22rem .7rem;
+    border: 1px solid var(--rule-firm); background: var(--surface-2); color: var(--ink);
+  }
+  .chip .score { font-family: var(--mono); font-size: .74rem; color: var(--ink-2); }
+  .chip.c-top { border-color: var(--ok); background: var(--ok-bg); font-weight: 600; }
+  .chip.c-top .score { color: var(--ok-text); font-weight: 700; }
+  .chip.c-warn { border-color: rgba(250,178,25,.55); background: var(--warn-bg); }
+  .chip.c-flag { border-color: rgba(208,59,59,.45); background: var(--critical-bg); }
+  .band-note { font-size: .74rem; color: var(--ink-3); align-self: center; padding-left: 1rem; }
+
+  /* ---------- status chips ---------- */
+  .status {
+    display: inline-flex; align-items: center; gap: .3rem;
+    font-size: .72rem; font-weight: 600; border-radius: 999px; padding: .12rem .55rem;
+    white-space: nowrap;
+  }
+  .s-ok       { background: var(--ok-bg);       color: var(--ok-text); }
+  .s-warn     { background: var(--warn-bg);     color: var(--warn-text); }
+  .s-serious  { background: var(--serious-bg);  color: var(--serious-text); }
+  .s-critical { background: var(--critical-bg); color: var(--critical-text); }
+  .s-neutral  { background: var(--neutral-bg);  color: var(--neutral-text); }
+
+  /* ---------- two-column detail ---------- */
+  .cols { display: grid; grid-template-columns: 1.15fr 1fr; gap: .75rem; }
+  .stack { display: flex; flex-direction: column; gap: .75rem; }
+
+  .top-match .head { display: flex; align-items: baseline; gap: .75rem; margin-bottom: .5rem; }
+  .top-match .head .who-name { font-size: 1.15rem; font-weight: 700; }
+  .top-match .head .title { color: var(--ink-2); font-size: .85rem; }
+  .top-match .bigscore { margin-left: auto; font-family: var(--mono); font-weight: 700; font-size: 1.5rem; color: var(--ok-text); }
+  .top-match .bigscore span { font-size: .85rem; color: var(--ink-3); font-weight: 500; }
+  .top-match ul { margin: .4rem 0 0 1.1rem; font-size: .86rem; color: var(--ink-2); }
+  .top-match li { margin-bottom: .3rem; }
+  .top-match li strong { color: var(--ink); font-weight: 600; }
+
+  .review-list { list-style: none; }
+  .review-list li {
+    display: grid; grid-template-columns: auto 1fr; gap: .6rem;
+    padding: .5rem 0; border-top: 1px solid var(--rule); font-size: .83rem;
+  }
+  .review-list li:first-child { border-top: 0; padding-top: .1rem; }
+  .review-list .who-name { font-weight: 600; white-space: nowrap; }
+  .review-list .why { color: var(--ink-2); }
+
+  /* ---------- outreach ---------- */
+  .outreach .mail {
+    border: 1px solid var(--rule); border-radius: 8px; background: var(--surface-2);
+    padding: .75rem .9rem; font-size: .84rem; margin-top: .5rem;
+  }
+  .outreach .mail .meta { font-family: var(--mono); font-size: .74rem; color: var(--ink-2); border-bottom: 1px solid var(--rule); padding-bottom: .5rem; margin-bottom: .5rem; }
+  .outreach .mail p { margin-bottom: .5rem; color: var(--ink-2); }
+  .outreach .mail p:last-child { margin-bottom: 0; }
+  .outreach .actions { display: flex; gap: .5rem; margin-top: .65rem; }
+  .btn {
+    font-size: .8rem; font-weight: 600; border-radius: 7px; padding: .4rem .9rem;
+    border: 1px solid var(--rule-firm); background: var(--surface); color: var(--ink); cursor: pointer;
+  }
+  .btn.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---------- tables ---------- */
+  .tablewrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: .84rem; }
+  th {
+    text-align: left; font-size: .7rem; text-transform: uppercase; letter-spacing: .07em;
+    color: var(--ink-3); font-weight: 650; padding: .6rem .9rem;
+    border-bottom: 1px solid var(--rule-firm); background: var(--surface-2);
+  }
+  td { padding: .5rem .9rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  td.mono { font-family: var(--mono); font-size: .78rem; color: var(--ink-2); }
+
+  footer {
+    max-width: 1080px; margin: 0 auto; padding: 0 1.5rem 2rem;
+    font-size: .74rem; color: var(--ink-3);
+    display: flex; gap: 1rem; flex-wrap: wrap;
+  }
+
+  @media (max-width: 900px) {
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .cols { grid-template-columns: 1fr; }
+    .topnav { display: none; }
+    .req .agent-run { margin-left: 0; text-align: left; }
+  }
+  @media (max-width: 640px) {
+    .card .src { display: none; }
+    .band { grid-template-columns: 96px 1fr; }
+    .band-key .range { font-size: .74rem; }
+    .kpis { grid-template-columns: 1fr 1fr; gap: .5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo">
+    <div class="logo-mark" aria-hidden="true">A</div>
+    <div class="wordmark">ACME ENTERPRISE<small>Talent Console</small></div>
+  </div>
+  <nav class="topnav" aria-label="Main">
+    <a href="#" aria-current="page">Dashboard</a>
+    <a href="#">Candidates</a>
+    <a href="#">Requisitions</a>
+    <a href="#">Reports</a>
+  </nav>
+  <div class="who"><span class="avatar" aria-hidden="true">S</span> Sarah · Talent Acquisition</div>
+</header>
+
+<main>
+
+  <section class="card assist" aria-label="Screening assistant">
+    <div class="assist-head">
+      <div class="agent-avatar" aria-hidden="true">✦</div>
+      <div class="titles">
+        <div class="t1">Acme screening assistant</div>
+        <div class="t2">Agentforce · advisory only — you make every decision</div>
+      </div>
+      <span class="live"><span class="agent-dot" aria-hidden="true"></span> Online</span>
+    </div>
+    <div class="msgs" id="msgs" aria-live="polite">
+      <div class="msg agent">Hi Sarah! I'm your Acme screening assistant. Ask me to screen applicants on file, or paste a job req and resumes.</div>
+    </div>
+    <div class="sugg" id="sugg">
+      <button type="button">How many candidates have applied?</button>
+      <button type="button">Screen all candidates on file for: Senior Full-Stack Engineer</button>
+      <button type="button">Draft a short outreach email to Elena Vasquez</button>
+    </div>
+    <form class="assist-input" id="chatform">
+      <input id="chatbox" type="text" placeholder="Message the screening assistant…" autocomplete="off" aria-label="Message the screening assistant">
+      <button class="btn primary" type="submit">Send</button>
+    </form>
+  </section>
+
+  <div class="req">
+    <div>
+      <h1>Senior Full-Stack Engineer</h1>
+      <div class="sub">Northwind logistics platform · Req open</div>
+      <div class="req-tags">
+        <span class="tag">5+ years</span>
+        <span class="tag">React / TypeScript</span>
+        <span class="tag">Node services</span>
+        <span class="tag">AWS</span>
+      </div>
+    </div>
+    <div class="agent-run">
+      <span class="badge"><span class="agent-dot" aria-hidden="true"></span> Screened by Agentforce · <span class="mono">Acme_Enterprise</span></span><br>
+      last run <span class="mono">4KBbm00000032tJGAQ</span> · completed in 21s · every run is logged
+    </div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi">
+      <div class="label">Candidates on file</div>
+      <div class="value">25</div>
+      <div class="note">live count from CRM</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Screened this run</div>
+      <div class="value">17</div>
+      <div class="note">profiles retrieved from CRM</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Needs human review</div>
+      <div class="value">5</div>
+      <div class="note warn-note">⚠ scored 60–75 — recruiter decides</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Resume integrity flags</div>
+      <div class="value">2</div>
+      <div class="note crit-note">⚑ skills unsupported by history</div>
+    </div>
+  </div>
+
+  <section class="card" aria-labelledby="rail-h">
+    <h2 id="rail-h">Screening results — agent rubric <span class="src">same rubric applied to every candidate</span></h2>
+
+    <div class="band b-exceptional">
+      <div class="band-key"><div class="range">90–100</div><div class="name">Exceptional match</div></div>
+      <div class="band-chips">
+        <span class="chip c-top">Elena Vasquez <span class="score">98/100</span></span>
+      </div>
+    </div>
+
+    <div class="band">
+      <div class="band-key"><div class="range">76–89</div><div class="name">Strong match</div></div>
+      <div class="band-chips">
+        <span class="chip">Marcus Chen</span>
+        <span class="chip">Ingrid Larsen</span>
+      </div>
+    </div>
+
+    <div class="band b-review">
+      <div class="band-key"><div class="range">60–75</div><div class="name">⚠ Needs human review</div></div>
+      <div class="band-chips">
+        <span class="chip c-warn">Derek Holt</span>
+        <span class="chip c-warn">Aisha Bello</span>
+        <span class="chip c-warn">Viktor Petrov</span>
+        <span class="chip c-warn">Liam O'Donnell</span>
+        <span class="chip c-warn">Fatima Al-Rashid</span>
+      </div>
+    </div>
+
+    <div class="band">
+      <div class="band-key"><div class="range">&lt; 60</div><div class="name">Weaker fit</div></div>
+      <div class="band-chips">
+        <span class="chip">Yuki Tanaka</span>
+        <span class="chip">Grace Osei</span>
+        <span class="chip">Carlos Mendes</span>
+        <span class="chip">Hannah Kim</span>
+        <span class="chip">Omar Farouk</span>
+        <span class="chip">Rosa Delgado</span>
+        <span class="chip">Ben Whitfield</span>
+      </div>
+    </div>
+
+    <div class="band b-flag">
+      <div class="band-key"><div class="range">⚑ flagged</div><div class="name">AI-padded resume</div></div>
+      <div class="band-chips">
+        <span class="chip c-flag">Tyler Brooks</span>
+        <span class="chip c-flag">Chloe Nakamura</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="cols">
+    <div class="stack">
+      <div class="card top-match">
+        <h2>Top match</h2>
+        <div class="head">
+          <span class="who-name">Elena Vasquez</span>
+          <span class="title">Staff Software Engineer</span>
+          <span class="bigscore">98<span>/100</span></span>
+        </div>
+        <span class="status s-ok">✓ Exceptional match</span>
+        <ul>
+          <li><strong>9 years full-stack</strong> — led the React + TypeScript rebuild of a dispatch platform used by 200 carriers daily</li>
+          <li><strong>Node microservices on AWS ECS</strong> — autoscaling and CI/CD pipelines built from scratch</li>
+          <li><strong>Logistics domain depth</strong> — real-time route optimization; mentors four engineers</li>
+        </ul>
+      </div>
+
+      <div class="card outreach">
+        <h2>Outreach queue <span class="src">drafted from profile data only</span></h2>
+        <span class="status s-warn">⚠ Pending recruiter approval</span>
+        <div class="mail">
+          <div class="meta">To: elena.vasquez@example.com · Subject: Senior Full-Stack Engineer — Northwind logistics platform</div>
+          <p>Hi Elena,</p>
+          <p>Your work leading the React and TypeScript rebuild of a carrier dispatch platform — and the Node services behind it on AWS — lines up closely with our Senior Full-Stack Engineer opening on the Northwind logistics platform. Would you be open to a short conversation this week?</p>
+          <p>Best,<br>Sarah · Acme Enterprise Talent</p>
+        </div>
+        <div class="actions">
+          <button class="btn primary" type="button">Approve &amp; send</button>
+          <button class="btn" type="button">Edit draft</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="stack">
+      <div class="card">
+        <h2>⚠ Human review notes <span class="src">scored 60–75 by rubric</span></h2>
+        <ul class="review-list">
+          <li><span class="who-name">Derek Holt</span><span class="why">Strong backend and systems design; TypeScript thin — leans on <span class="mono">any</span>.</span></li>
+          <li><span class="who-name">Aisha Bello</span><span class="why">Clean end-to-end work; just under the 5-year bar, AWS mostly side projects.</span></li>
+          <li><span class="who-name">Viktor Petrov</span><span class="why">30+ technologies listed; no named employer, project, or metric to verify.</span></li>
+          <li><span class="who-name">Liam O'Donnell</span><span class="why">Capable backend engineer; React/TypeScript sit outside his skill set.</span></li>
+          <li><span class="who-name">Fatima Al-Rashid</span><span class="why">Deep AWS/DevOps expertise; has never owned a customer-facing feature.</span></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>⚑ Resume integrity flags <span class="src">skills vs. work history</span></h2>
+        <ul class="review-list">
+          <li><span class="who-name">Tyler Brooks</span><span class="why"><span class="status s-critical">⚑ AI-padded</span> Expert-level claims across 8 stacks; work history is 3 years of WordPress themes — no employer used any claimed technology.</span></li>
+          <li><span class="who-name">Chloe Nakamura</span><span class="why"><span class="status s-critical">⚑ AI-padded</span> Claims to have led a 20-person org and a $40M migration; history shows junior QA and bootcamp TA roles.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Candidate roster · 17 profiles</h2>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>Candidate</th><th>Current title</th><th>Email</th><th>Screening status</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Elena Vasquez</strong></td><td>Staff Software Engineer</td><td class="mono">elena.vasquez@example.com</td><td><span class="status s-ok">✓ Exceptional · 98</span></td></tr>
+          <tr><td>Marcus Chen</td><td>Senior Frontend Engineer</td><td class="mono">marcus.chen@example.com</td><td><span class="status s-neutral">Strong match</span></td></tr>
+          <tr><td>Ingrid Larsen</td><td>Senior Full-Stack Engineer</td><td class="mono">ingrid.larsen@example.com</td><td><span class="status s-neutral">Strong match</span></td></tr>
+          <tr><td>Derek Holt</td><td>Senior Software Engineer</td><td class="mono">derek.holt@example.com</td><td><span class="status s-warn">⚠ Human review</span></td></tr>
+          <tr><td>Aisha Bello</td><td>Full-Stack Developer</td><td class="mono">aisha.bello@example.com</td><td><span class="status s-warn">⚠ Human review</span></td></tr>
+          <tr><td>Viktor Petrov</td><td>Senior Developer</td><td class="mono">viktor.petrov@example.com</td><td><span class="status s-warn">⚠ Human review</span></td></tr>
+          <tr><td>Liam O'Donnell</td><td>Backend Engineer</td><td class="mono">liam.odonnell@example.com</td><td><span class="status s-warn">⚠ Human review</span></td></tr>
+          <tr><td>Fatima Al-Rashid</td><td>DevOps Engineer</td><td class="mono">fatima.al-rashid@example.com</td><td><span class="status s-warn">⚠ Human review</span></td></tr>
+          <tr><td>Tyler Brooks</td><td>Senior Full-Stack Engineer</td><td class="mono">tyler.brooks@example.com</td><td><span class="status s-critical">⚑ AI-padded resume</span></td></tr>
+          <tr><td>Chloe Nakamura</td><td>Lead Engineer</td><td class="mono">chloe.nakamura@example.com</td><td><span class="status s-critical">⚑ AI-padded resume</span></td></tr>
+          <tr><td>Yuki Tanaka</td><td>Mobile Engineer</td><td class="mono">yuki.tanaka@example.com</td><td><span class="status s-neutral">Weaker fit</span></td></tr>
+          <tr><td>Grace Osei</td><td>Software Engineer II</td><td class="mono">grace.osei@example.com</td><td><span class="status s-neutral">Weaker fit</span></td></tr>
+          <tr><td>Carlos Mendes</td><td>Full-Stack Engineer</td><td class="mono">carlos.mendes@example.com</td><td><span class="status s-neutral">Weaker fit</span></td></tr>
+          <tr><td>Hannah Kim</td><td>Senior QA Engineer</td><td class="mono">hannah.kim@example.com</td><td><span class="status s-neutral">Weaker fit</span></td></tr>
+          <tr><td>Omar Farouk</td><td>Solutions Architect</td><td class="mono">omar.farouk@example.com</td><td><span class="status s-neutral">Weaker fit</span></td></tr>
+          <tr><td>Rosa Delgado</td><td>Registered Nurse</td><td class="mono">rosa.delgado@example.com</td><td><span class="status s-neutral">Weaker fit</span></td></tr>
+          <tr><td>Ben Whitfield</td><td>Account Executive</td><td class="mono">ben.whitfield@example.com</td><td><span class="status s-neutral">Weaker fit</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <span>Acme Enterprise · Talent Operations</span>
+  <span>Powered by Agentforce</span>
+  <span>AI screening is advisory — a recruiter reviews every decision, and no candidate is auto-rejected</span>
+</footer>
+
+<script>
+(function () {
+  const msgs = document.getElementById('msgs');
+  const form = document.getElementById('chatform');
+  const box = document.getElementById('chatbox');
+
+  function reply(text) {
+    if (/how many|count/i.test(text)) {
+      return 'There are currently 25 candidates on file in the system.';
+    }
+    if (/screen/i.test(text)) {
+      return 'Screening complete — 17 profiles retrieved and scored against the rubric. Top match: Elena Vasquez (98/100). Five candidates scored 60–75 and need your review, and two resumes are flagged as AI-padded (Tyler Brooks, Chloe Nakamura). Full results are on the dashboard below.';
+    }
+    if (/outreach|email|invite|reach out/i.test(text)) {
+      return 'Done — I drafted a short outreach email to Elena Vasquez, grounded only in her profile (Staff Software Engineer, React/TypeScript platform rebuild, logistics background). It’s in the outreach queue below, pending your approval. Nothing sends without your sign-off.';
+    }
+    return 'I can screen candidates on file against a job req, count applicants, or draft outreach to a candidate. Try one of the suggestions below.';
+  }
+
+  function add(kind, text) {
+    const el = document.createElement('div');
+    el.className = 'msg ' + kind;
+    el.textContent = text;
+    msgs.appendChild(el);
+    msgs.scrollTop = msgs.scrollHeight;
+    return el;
+  }
+
+  function send(text) {
+    if (!text.trim()) return;
+    add('user', text.trim());
+    const typing = add('agent typing', '…');
+    setTimeout(function () {
+      typing.classList.remove('typing');
+      typing.textContent = reply(text);
+      msgs.scrollTop = msgs.scrollHeight;
+    }, 700);
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    send(box.value);
+    box.value = '';
+  });
+  document.getElementById('sugg').addEventListener('click', function (e) {
+    if (e.target.tagName === 'BUTTON') send(e.target.textContent);
+  });
+})();
+</script>
+
+</body>
+</html>

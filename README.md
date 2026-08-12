@@ -1,5 +1,8 @@
 # Acme Enterprise — CLI-First Agentforce Hiring Demo
 
+**🏢 Live demo — Acme Talent Console:** <https://nikkiricks.github.io/acme-agentforce-demo/acme-dashboard.html>
+(GitHub Pages copy of [docs/acme-dashboard.html](docs/acme-dashboard.html) — what Acme's recruiters would see)
+
 An Agentforce agent that does recruiter-grade bulk candidate triage against live CRM data —
 built, deployed, tested, and versioned **entirely from the terminal**. The Agentforce Builder
 UI was never opened. That's the point: under a customer constraint of "AI screening must be
@@ -113,6 +116,15 @@ contacts — was put there from the terminal; nothing was authored in these scre
 `--url-only` to any of the above to print a login URL instead of opening a browser.
 
 ## Giving the demo
+
+**Client-facing dashboard:** [docs/acme-dashboard.html](docs/acme-dashboard.html) — the
+Acme Talent Console, a self-contained demo page (works offline, no server) showing what
+Acme's recruiters would see: a chat panel for the screening assistant, the rubric band
+rail, the 17-profile roster, and the outreach queue. Open it with:
+
+```bash
+open docs/acme-dashboard.html
+```
 
 `docs/demo-runbook.md` is the verbatim 5-beat script with fallbacks and a night-before
 checklist. The story it tells: `docs/pov-brief.md` (point of view + evidence table),
