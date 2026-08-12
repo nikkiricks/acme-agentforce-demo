@@ -1,0 +1,63 @@
+name: Acme_Enterprise_Triage_Ladder
+description: >-
+  The 4-question demo ladder for the Acme Enterprise hiring agent, run as a
+  repeatable AiEvaluationDefinition (testing-center runner). Covers: candidate
+  count, roster lookup, full screening-with-rubric, and outreach drafting.
+subjectType: AGENT
+subjectName: Acme_Enterprise
+testCases:
+  # Case 1: "How many candidates have applied?"
+  - utterance: How many candidates have applied?
+    expectedTopic: candidate_screening
+    expectedActions:
+      - CountCandidates
+    expectedOutcome: >-
+      The agent reports the total number of candidates on file. The response
+      must literally contain the number 25.
+
+  # Case 2: "Who has applied to the Senior Full-Stack Engineer role?"
+  - utterance: Who has applied to the Senior Full-Stack Engineer role?
+    expectedTopic: candidate_screening
+    expectedActions:
+      - GetCandidateProfiles
+    expectedOutcome: >-
+      The agent lists candidates on file. The response must name at least
+      three of these three candidates, by first and last name: Elena
+      Vasquez, Maria Gonzalez, Marcus Chen.
+
+  # Case 3: full screening request against a rubric
+  - utterance: >-
+      Screen all candidates on file for: Senior Full-Stack Engineer, Northwind
+      logistics platform. Requirements: 5+ years, React/TypeScript, Node
+      services, AWS.
+    expectedTopic: candidate_screening
+    expectedActions:
+      - GetCandidateProfiles
+    expectedOutcome: >-
+      The agent returns a ranked top-5 list with rationale for each
+      candidate, flags at least one candidate with a human-review warning
+      (the response must contain a ⚠ character), and calls out at least one
+      candidate's resume as AI-padded/AI-generated-sounding, naming at least
+      one of: Tyler Brooks, Chloe Nakamura, Viktor Petrov.
+
+  # Case 4: outreach email to the strongest candidate, continuing case 3's context
+  - utterance: Draft a short outreach email to the strongest candidate.
+    expectedTopic: candidate_screening
+    expectedActions: []
+    conversationHistory:
+      - role: user
+        message: >-
+          Screen all candidates on file for: Senior Full-Stack Engineer,
+          Northwind logistics platform. Requirements: 5+ years,
+          React/TypeScript, Node services, AWS.
+      - role: agent
+        message: >-
+          Top-ranked: 1) Elena Vasquez (95/100) - 6 years React/TypeScript,
+          Node, and AWS, strong fit. 2) Maria Gonzalez (88/100) - solid
+          full-stack background with AWS deployment experience. 3) Marcus
+          Chen (74/100, ⚠ human review recommended) - meets most
+          requirements but resume phrasing reads as AI-generated in places.
+        topic: candidate_screening
+    expectedOutcome: >-
+      The agent drafts a short outreach email. The response must name Elena
+      Vasquez or Maria Gonzalez as the recipient/subject of the email.

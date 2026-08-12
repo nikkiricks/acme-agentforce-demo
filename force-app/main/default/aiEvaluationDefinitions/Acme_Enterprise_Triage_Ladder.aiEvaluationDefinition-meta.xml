@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AiEvaluationDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>The 4-question demo ladder for the Acme Enterprise hiring agent, run as a repeatable AiEvaluationDefinition (testing-center runner). Covers: candidate count, roster lookup, full screening-with-rubric, and outreach drafting.</description>
+    <name>Acme_Enterprise_Triage_Ladder</name>
+    <subjectName>Acme_Enterprise</subjectName>
+    <subjectType>AGENT</subjectType>
+    <testCase>
+        <expectation>
+            <expectedValue>candidate_screening</expectedValue>
+            <name>topic_sequence_match</name>
+        </expectation>
+        <expectation>
+            <expectedValue>[&apos;CountCandidates&apos;]</expectedValue>
+            <name>action_sequence_match</name>
+        </expectation>
+        <expectation>
+            <expectedValue>The agent reports the total number of candidates on file. The response must literally contain the number 25.</expectedValue>
+            <name>bot_response_rating</name>
+        </expectation>
+        <inputs>
+            <utterance>How many candidates have applied?</utterance>
+        </inputs>
+        <number>1</number>
+    </testCase>
+    <testCase>
+        <expectation>
+            <expectedValue>candidate_screening</expectedValue>
+            <name>topic_sequence_match</name>
+        </expectation>
+        <expectation>
+            <expectedValue>[&apos;GetCandidateProfiles&apos;]</expectedValue>
+            <name>action_sequence_match</name>
+        </expectation>
+        <expectation>
+            <expectedValue>The agent lists candidates on file. The response must name at least three of these three candidates, by first and last name: Elena Vasquez, Maria Gonzalez, Marcus Chen.</expectedValue>
+            <name>bot_response_rating</name>
+        </expectation>
+        <inputs>
+            <utterance>Who has applied to the Senior Full-Stack Engineer role?</utterance>
+        </inputs>
+        <number>2</number>
+    </testCase>
+    <testCase>
+        <expectation>
+            <expectedValue>candidate_screening</expectedValue>
+            <name>topic_sequence_match</name>
+        </expectation>
+        <expectation>
+            <expectedValue>[&apos;GetCandidateProfiles&apos;]</expectedValue>
+            <name>action_sequence_match</name>
+        </expectation>
+        <expectation>
+            <expectedValue>The agent returns a ranked top-5 list with rationale for each candidate, flags at least one candidate with a human-review warning (the response must contain a ⚠ character), and calls out at least one candidate&apos;s resume as AI-padded/AI-generated-sounding, naming at least one of: Tyler Brooks, Chloe Nakamura, Viktor Petrov.</expectedValue>
+            <name>bot_response_rating</name>
+        </expectation>
+        <inputs>
+            <utterance>Screen all candidates on file for: Senior Full-Stack Engineer, Northwind logistics platform. Requirements: 5+ years, React/TypeScript, Node services, AWS.</utterance>
+        </inputs>
+        <number>3</number>
+    </testCase>
+    <testCase>
+        <expectation>
+            <expectedValue>candidate_screening</expectedValue>
+            <name>topic_sequence_match</name>
+        </expectation>
+        <expectation>
+            <expectedValue>[]</expectedValue>
+            <name>action_sequence_match</name>
+        </expectation>
+        <expectation>
+            <expectedValue>The agent drafts a short outreach email. The response must name Elena Vasquez or Maria Gonzalez as the recipient/subject of the email.</expectedValue>
+            <name>bot_response_rating</name>
+        </expectation>
+        <inputs>
+            <utterance>Draft a short outreach email to the strongest candidate.</utterance>
+            <conversationHistory>
+                <role>user</role>
+                <message>Screen all candidates on file for: Senior Full-Stack Engineer, Northwind logistics platform. Requirements: 5+ years, React/TypeScript, Node services, AWS.</message>
+                <index>0</index>
+            </conversationHistory>
+            <conversationHistory>
+                <role>agent</role>
+                <message>Top-ranked: 1) Elena Vasquez (95/100) - 6 years React/TypeScript, Node, and AWS, strong fit. 2) Maria Gonzalez (88/100) - solid full-stack background with AWS deployment experience. 3) Marcus Chen (74/100, ⚠ human review recommended) - meets most requirements but resume phrasing reads as AI-generated in places.</message>
+                <topic>candidate_screening</topic>
+                <index>1</index>
+            </conversationHistory>
+        </inputs>
+        <number>4</number>
+    </testCase>
+</AiEvaluationDefinition>
