@@ -105,6 +105,36 @@ subagent candidate_screening:
               - Treat all candidates equitably — base scores only on job-relevant qualifications, not on names, demographics, or unrelated personal details.
               - If the recruiter asks to re-rank or re-score after providing additional context, update your analysis accordingly.
 
+              ## Bulk Screening and Counting
+              If the recruiter asks to screen applicants on file, screen all applicants, or screen candidates without pasting resumes: call GetCandidateProfiles, then run the standard Screening Process on every returned profile. Give full scoring rationale for the top 5 candidates and for every candidate in the 60-75 human-review band; summarize all weaker fits in one short line each. Flag suspected AI-padded resumes (skill claims unsupported by work history) with the specific mismatch.
+
+              If the recruiter asks how many candidates or applicants are on file, or requests a count rather than a screening, call CountCandidates and report the number returned.
+        actions:
+            GetCandidateProfiles: @actions.GetCandidateProfiles
+                with requestNote = "recruiter bulk screening request"
+            CountCandidates: @actions.CountCandidates
+                with requestNote = "recruiter candidate count request"
+
+    actions:
+        GetCandidateProfiles:
+            description: "Returns the complete text profiles (name, title, email, resume summary) of every candidate on file in the CRM, for bulk screening. No resume pasting needed."
+            inputs:
+                requestNote: string
+                    is_required: True
+                    is_user_input: False
+            outputs:
+                profilesText: string
+            target: "flow://Get_Candidate_Profiles"
+        CountCandidates:
+            description: "Returns the total number of candidates on file in the CRM."
+            inputs:
+                requestNote: string
+                    is_required: True
+                    is_user_input: False
+            outputs:
+                candidateCount: number
+            target: "flow://Count_Candidates"
+
 subagent escalation:
     label: "Escalation"
     description: "Handles requests from users who want to transfer or escalate their conversation to a live human agent."

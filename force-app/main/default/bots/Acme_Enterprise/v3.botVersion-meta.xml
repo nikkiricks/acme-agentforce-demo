@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BotVersion xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>v3</fullName>
+    <articleAnswersGPTEnabled>false</articleAnswersGPTEnabled>
+    <botDialogs>
+        <botSteps>
+            <botMessages>
+                <message>Hi Sarah! I&apos;m your Acme screening assistant. Ask me to screen applicants on file, or paste a job req and resumes.</message>
+                <messageIdentifier>26312e0c-dedb-424b-81eb-242f9b3e4b82</messageIdentifier>
+            </botMessages>
+            <stepIdentifier>25e90af5-770d-46c4-953d-02ef79a0f195</stepIdentifier>
+            <type>Message</type>
+        </botSteps>
+        <botSteps>
+            <stepIdentifier>c909cc66-cd2f-4307-a2b0-69c3af26e097</stepIdentifier>
+            <type>Wait</type>
+        </botSteps>
+        <developerName>Welcome</developerName>
+        <isPlaceholderDialog>false</isPlaceholderDialog>
+        <label>Welcome</label>
+        <showInFooterMenu>false</showInFooterMenu>
+    </botDialogs>
+    <botDialogs>
+        <botSteps>
+            <botMessages>
+                <message>Sorry, it looks like something has gone wrong.</message>
+                <messageIdentifier>d534c782-530d-4d4a-a34a-ce5e96072f13</messageIdentifier>
+            </botMessages>
+            <stepIdentifier>53082e71-7b8f-401e-830c-86c8280f6d96</stepIdentifier>
+            <type>Message</type>
+        </botSteps>
+        <botSteps>
+            <stepIdentifier>822b2f37-e4e2-4fac-8493-39491f3ab8f6</stepIdentifier>
+            <type>Wait</type>
+        </botSteps>
+        <developerName>Rich_Content_Error_Handling</developerName>
+        <isPlaceholderDialog>false</isPlaceholderDialog>
+        <label>Error Handler</label>
+        <showInFooterMenu>false</showInFooterMenu>
+    </botDialogs>
+    <botDialogs>
+        <botSteps>
+            <conversationSystemMessage>
+                <type>Transfer</type>
+            </conversationSystemMessage>
+            <stepIdentifier>e1fc838e-3d49-4fb3-8177-1374f9d4daa4</stepIdentifier>
+            <type>SystemMessage</type>
+        </botSteps>
+        <developerName>Transfer_To_Agent</developerName>
+        <isPlaceholderDialog>false</isPlaceholderDialog>
+        <label>Transfer To Agent</label>
+        <showInFooterMenu>false</showInFooterMenu>
+    </botDialogs>
+    <citationsEnabled>false</citationsEnabled>
+    <conversationDefinitionPlanners>
+        <genAiPlannerName>Acme_Enterprise_v3</genAiPlannerName>
+    </conversationDefinitionPlanners>
+    <conversationSystemDialogs>
+        <dialog>Rich_Content_Error_Handling</dialog>
+        <type>ErrorHandling</type>
+    </conversationSystemDialogs>
+    <conversationVariables>
+        <dataType>Text</dataType>
+        <description>The next topic to be visited</description>
+        <developerName>AgentScriptInternal_next_topic</developerName>
+        <includeInPrompt>false</includeInPrompt>
+        <label>Next Topic</label>
+        <visibility>Internal</visibility>
+    </conversationVariables>
+    <conversationVariables>
+        <dataType>Text</dataType>
+        <description>This variable may also be referred to as VerifiedCustomerId</description>
+        <developerName>VerifiedCustomerId</developerName>
+        <includeInPrompt>false</includeInPrompt>
+        <label>Verified Customer Id</label>
+        <visibility>Internal</visibility>
+    </conversationVariables>
+    <conversationVariables>
+        <dataType>Text</dataType>
+        <description>The agent instructions</description>
+        <developerName>AgentScriptInternal_agent_instructions</developerName>
+        <includeInPrompt>false</includeInPrompt>
+        <label>Agent Instructions</label>
+        <visibility>Internal</visibility>
+    </conversationVariables>
+    <copilotPrimaryLanguage>en_US</copilotPrimaryLanguage>
+    <defaultStdObjForContactIdFltrEnabled>false</defaultStdObjForContactIdFltrEnabled>
+    <entryDialog>Welcome</entryDialog>
+    <intentDisambiguationEnabled>false</intentDisambiguationEnabled>
+    <intentV3Enabled>false</intentV3Enabled>
+    <isScriptCompatibleAgent>true</isScriptCompatibleAgent>
+    <knowledgeActionEnabled>false</knowledgeActionEnabled>
+    <knowledgeFallbackEnabled>false</knowledgeFallbackEnabled>
+    <smallTalkEnabled>false</smallTalkEnabled>
+    <staticPromptsEnabled>false</staticPromptsEnabled>
+    <stopRecPrompts>false</stopRecPrompts>
+    <stopWelcomePrompts>false</stopWelcomePrompts>
+    <surfacesEnabled>false</surfacesEnabled>
+    <toneType>Casual</toneType>
+</BotVersion>
