@@ -98,6 +98,20 @@ of running them.
 sf apex run test --tests SecurityBeatTest --result-format human --wait 10
 ```
 
+**7. Look at it in the Salesforce UI** (optional — the whole point of this build is that the
+UI is a preview window, not the workbench, but seeing it is believing it):
+
+```bash
+sf org open                                              # org home, logged in
+sf org open -p "/lightning/setup/EinsteinCopilot/home"   # Agentforce Agents — open "Acme Enterprise" for the Builder view + preview pane
+sf org open -p "/lightning/setup/Flows/home"             # the two CLI-authored flows
+sf org open -p "/lightning/o/Contact/list"               # the 25-candidate roster
+```
+
+Everything you'll see there — the agent's topics and actions, the active flow versions, the
+contacts — was put there from the terminal; nothing was authored in these screens. Add
+`--url-only` to any of the above to print a login URL instead of opening a browser.
+
 ## Giving the demo
 
 `docs/demo-runbook.md` is the verbatim 5-beat script with fallbacks and a night-before
