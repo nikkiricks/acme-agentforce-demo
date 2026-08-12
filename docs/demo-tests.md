@@ -101,11 +101,16 @@ clean (`Status: COMPLETED`, no CLI errors) in 21s.
 | 1 | How many candidates have applied? | Pass | Pass (`CountCandidates`) | **Pass** — "There are currently 25 candidates on file in the system." | **PASS** |
 | 2 | Who has applied to the Senior Full-Stack Engineer role? | Pass | Pass (`GetCandidateProfiles`) | **Fail** — agent asked for the job description instead of naming candidates: "I have candidate profiles available, but I need the specific job description for the Senior Full-Stack Engineer role to complete a screening..." | **FAIL (outcome only)** |
 | 3 | Screen all candidates on file for: Senior Full-Stack Engineer, Northwind logistics platform... | Pass | Pass (`GetCandidateProfiles`) | **Pass** — full ranked list led by Elena Vasquez (98/100), included ⚠ Needs Human Review flags (Derek Holt, Aisha Bello, Viktor Petrov, Liam O'Donnell, Fatima Al-Rashid), and explicitly called out "Tyler Brooks: Claimed skills not supported by work history (AI-padded)" and "Chloe Nakamura: Experience does not match claims (AI-padded)." | **PASS** |
-| 4 | Draft a short outreach email to the strongest candidate. (continuation of case 3's context) | Pass | Pass (`[]`, none expected/invoked) | **Pass** — drafted an email addressed "Hi Elena," referencing Elena Vasquez by name and the Senior Full-Stack Engineer / Northwind role. | **PASS** |
+| 4 | Draft a short outreach email to the strongest candidate. (continuation of case 3's context) | Pass | Pass (`[]`, none expected/invoked) | **Pass, borderline (score 3)** — email addressed "Hi Elena," and referenced the Senior Full-Stack Engineer / Northwind role, but the surname "Vasquez" never appears anywhere in the generated text — only the first name. The judge's own `metricExplainability` flags this: *"The bot's response drafts an outreach email but does not name either of the specified recipients (Elena Vasquez or Maria Gonzalez). It uses a placeholder name 'Elena' without the full name... This omission makes the response partially aligned but not fully meeting the requirement."* | **PASS (partial credit, not a clean full-name match)** |
 
 **Aggregate:** Topic Pass 100% (4/4), Action Pass 100% (4/4), Outcome Pass 75%
-(3/4). **3 of 4 cases fully pass; case 2 is a real product finding, not a
-test-authoring bug** — see note below.
+(3/4, `PASS`/`FAIL` at the framework's own threshold). **3 of 4 cases pass
+outcome; case 2 is a real product finding, not a test-authoring bug** — see
+note below. Note that "pass" for case 4 is borderline, not clean: the judge
+scored it 3 (out of 5) and its own explainability text says the response
+never actually says "Vasquez," only the first name "Elena" — see the row
+above and the finding below. A reader using this table as a demo rehearsal
+script should not expect the agent to say the candidate's full name.
 
 ### Finding: case 2's failure is a genuine agent-behavior gap
 
