@@ -1,0 +1,10 @@
+Map<String, Object> inputs = new Map<String, Object>{ 'requestNote' => 'verification run' };
+Flow.Interview iv = Flow.Interview.createInterview('Get_Candidate_Profiles', inputs);
+iv.start();
+String profiles = (String) iv.getVariableValue('profilesText');
+System.assert(profiles != null && profiles.length() > 0, 'profilesText empty');
+Integer blocks = profiles.countMatches('--- ');
+System.assert(blocks == 25, 'Expected 25 profile blocks, got ' + blocks);
+System.assert(profiles.contains('Maria Gonzalez'), 'Missing existing candidate');
+System.assert(profiles.contains('Elena Vasquez'), 'Missing new candidate');
+System.debug('PROFILE BLOCKS: ' + blocks + ' | LENGTH: ' + profiles.length());
