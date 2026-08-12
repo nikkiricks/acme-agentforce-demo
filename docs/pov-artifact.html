@@ -1,0 +1,685 @@
+<title>CLI-First Agentforce PoC</title>
+
+<style>
+  :root {
+    /* light — the default, un-stamped state */
+    --paper:      #F6F7F4;
+    --surface:    #FDFDFB;
+    --surface-2:  #F0F2EC;
+    --ink:        #161A17;
+    --ink-2:      #5C635D;
+    --ink-3:      #868D87;
+    --rule:       #DDE0D9;
+    --rule-firm:  #C4C9BF;
+    --accent:     #0E6E72;
+    --accent-soft:rgba(14,110,114,0.10);
+
+    --ok:      #0F7D57;
+    --warn:    #C07E00;
+    --bad:     #A32B1E;
+    --neutral: #6B726C;
+
+    --add-bg:  rgba(15,125,87,0.08);
+    --del-bg:  rgba(163,43,30,0.06);
+
+    --font-mono: ui-monospace, "SF Mono", SFMono-Regular, "JetBrains Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --font-serif: ui-serif, "New York", "Iowan Old Style", Charter, "Palatino Linotype", Palatino, Georgia, serif;
+
+    --rail: 4.25rem;
+    --measure: 66ch;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #141715;
+      --surface:    #1B1F1C;
+      --surface-2:  #232824;
+      --ink:        #E4E8E1;
+      --ink-2:      #99A29A;
+      --ink-3:      #6E766F;
+      --rule:       #2C322D;
+      --rule-firm:  #3D453E;
+      --accent:     #4FB6BA;
+      --accent-soft:rgba(79,182,186,0.13);
+
+      --ok:      #3FA97C;
+      --warn:    #D6A02A;
+      --bad:     #E5786A;
+      --neutral: #8C948D;
+
+      --add-bg:  rgba(63,169,124,0.11);
+      --del-bg:  rgba(229,120,106,0.09);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:      #141715;
+    --surface:    #1B1F1C;
+    --surface-2:  #232824;
+    --ink:        #E4E8E1;
+    --ink-2:      #99A29A;
+    --ink-3:      #6E766F;
+    --rule:       #2C322D;
+    --rule-firm:  #3D453E;
+    --accent:     #4FB6BA;
+    --accent-soft:rgba(79,182,186,0.13);
+
+    --ok:      #3FA97C;
+    --warn:    #D6A02A;
+    --bad:     #E5786A;
+    --neutral: #8C948D;
+
+    --add-bg:  rgba(63,169,124,0.11);
+    --del-bg:  rgba(229,120,106,0.09);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-serif);
+    font-size: 17px;
+    line-height: 1.62;
+    margin: 0;
+    padding: 0 1.25rem 5rem;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 62rem;
+    margin: 0 auto;
+  }
+
+  /* ---- the rail: a diff/line-number gutter carrying section index ---- */
+  .band {
+    display: grid;
+    grid-template-columns: var(--rail) minmax(0, 1fr);
+    gap: 0 1.75rem;
+    padding: 2.75rem 0;
+    border-top: 1px solid var(--rule);
+  }
+  .band > .idx {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+    padding-top: 0.4rem;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .band > .body { min-width: 0; }
+
+  @media (max-width: 760px) {
+    .band { grid-template-columns: minmax(0, 1fr); gap: 0; }
+    .band > .idx { text-align: left; padding-top: 0; padding-bottom: 0.5rem; }
+  }
+
+  /* ---- type ---- */
+  h1, h2, h3, .eyebrow, .mono, code, th, .pill, .stat-n, .stat-l {
+    font-family: var(--font-mono);
+  }
+
+  h1 {
+    font-size: clamp(1.85rem, 4.6vw, 2.9rem);
+    line-height: 1.12;
+    letter-spacing: -0.025em;
+    font-weight: 600;
+    margin: 0 0 1rem;
+    text-wrap: balance;
+  }
+  h2 {
+    font-size: 1.06rem;
+    letter-spacing: -0.01em;
+    font-weight: 600;
+    margin: 0 0 1.1rem;
+    color: var(--ink);
+  }
+  h3 {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.11em;
+    font-weight: 600;
+    color: var(--ink-2);
+    margin: 2rem 0 0.6rem;
+  }
+  p { margin: 0 0 1rem; max-width: var(--measure); }
+  p:last-child { margin-bottom: 0; }
+  strong { font-weight: 600; }
+
+  .eyebrow {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--accent);
+    margin: 0 0 0.9rem;
+  }
+  .lede {
+    font-size: 1.12rem;
+    color: var(--ink-2);
+    max-width: 58ch;
+  }
+  .note {
+    font-size: 0.88rem;
+    color: var(--ink-2);
+    max-width: 72ch;
+  }
+
+  code {
+    font-size: 0.86em;
+    background: var(--surface-2);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 0.08em 0.34em;
+    color: var(--ink);
+    word-break: break-word;
+  }
+
+  /* ---- masthead ---- */
+  header.masthead {
+    padding: 3.5rem 0 2.5rem;
+    display: grid;
+    grid-template-columns: var(--rail) minmax(0, 1fr);
+    gap: 0 1.75rem;
+  }
+  @media (max-width: 760px) {
+    header.masthead { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  }
+  .mark {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--accent);
+    letter-spacing: 0.06em;
+    padding-top: 0.55rem;
+    text-align: right;
+  }
+  @media (max-width: 760px) {
+    .mark { text-align: left; padding: 0 0 0.75rem; }
+  }
+
+  /* ---- KPI row ---- */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    margin-top: 2.25rem;
+  }
+  .stat {
+    background: var(--surface);
+    padding: 0.95rem 1.05rem 1.05rem;
+  }
+  .stat-n {
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+    display: block;
+  }
+  .stat-l {
+    font-size: 0.67rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-2);
+    display: block;
+    margin-top: 0.4rem;
+  }
+  .stat-n.is-ok { color: var(--ok); }
+
+  /* ---- the diff: V1 failure -> V2 antidote ---- */
+  .diff { display: flex; flex-direction: column; gap: 1.35rem; }
+  .pair {
+    border: 1px solid var(--rule);
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 1.6rem minmax(0, 1fr);
+    align-items: start;
+    padding: 0.7rem 0.9rem 0.75rem 0.55rem;
+    font-size: 0.94rem;
+  }
+  .row.del { background: var(--del-bg); }
+  .row.add { background: var(--add-bg); border-top: 1px solid var(--rule); }
+  .sign {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-align: center;
+    line-height: 1.6;
+    user-select: none;
+  }
+  .row.del .sign { color: var(--bad); }
+  .row.add .sign { color: var(--ok); }
+  .row .txt { min-width: 0; }
+  .row .lbl {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: block;
+    margin-bottom: 0.15rem;
+  }
+  .row.del .lbl { color: var(--bad); }
+  .row.add .lbl { color: var(--ok); }
+  .artifact {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--ink-2);
+    margin-top: 0.4rem;
+    word-break: break-all;
+  }
+
+  /* ---- tables ---- */
+  .scroller { overflow-x: auto; border: 1px solid var(--rule); background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+  th, td {
+    text-align: left;
+    padding: 0.55rem 0.85rem;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  th {
+    font-size: 0.67rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    color: var(--ink-2);
+    background: var(--surface-2);
+    white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  /* ---- verdict pills (status color + always a word) ---- */
+  .pill {
+    display: inline-block;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    padding: 0.1rem 0.42rem;
+    border: 1px solid currentColor;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+  .pill.ok { color: var(--ok); }
+  .pill.warn { color: var(--warn); }
+  .pill.bad { color: var(--bad); }
+  .pill.neu { color: var(--neutral); }
+
+  /* ---- proportion meter: 30 questions, four verdicts ---- */
+  .meter {
+    display: flex;
+    gap: 2px;
+    height: 0.7rem;
+    margin: 0 0 0.6rem;
+  }
+  .meter span { display: block; }
+  .meter .s-ok  { background: var(--ok);      flex: 16; }
+  .meter .s-par { background: var(--warn);    flex: 4; }
+  .meter .s-bad { background: var(--bad);     flex: 9; }
+  .meter .s-neu { background: var(--neutral); flex: 1; }
+  .meter-cap {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--ink-2);
+    letter-spacing: 0.04em;
+    margin-bottom: 1.4rem;
+  }
+
+  /* ---- callout ---- */
+  .callout {
+    border-left: 2px solid var(--accent);
+    background: var(--accent-soft);
+    padding: 0.9rem 1.1rem;
+    margin: 1.4rem 0;
+    max-width: var(--measure);
+  }
+  .callout p { font-size: 0.96rem; }
+
+  /* ---- forward list ---- */
+  .fwd { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.9rem; }
+  .fwd li { border-top: 1px solid var(--rule); padding-top: 0.75rem; max-width: var(--measure); }
+  .fwd .k {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 0.15rem;
+  }
+  .fwd .v { font-size: 0.95rem; color: var(--ink-2); }
+
+  footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--rule);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--ink-3);
+    line-height: 1.9;
+  }
+
+  :where(a) { color: var(--accent); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="mark">$ sf</div>
+    <div>
+      <p class="eyebrow">Proof of concept &middot; Acme Enterprise &middot; regulated hiring</p>
+      <h1>Acme Enterprise — a CLI-First Agentforce PoC</h1>
+      <p class="lede">A hiring-screening agent built entirely from a terminal. The Agentforce
+        Builder UI was never opened. Every instruction, action, flow, grant, and test is a
+        file in one repository — which is the same thing as the audit trail.</p>
+
+      <div class="stats">
+        <div class="stat"><span class="stat-n is-ok">v3 Active</span><span class="stat-l">BotVersion, published &amp; activated from CLI</span></div>
+        <div class="stat"><span class="stat-n">4/4 &middot; 4/4</span><span class="stat-l">Topic &amp; action, agent test suite</span></div>
+        <div class="stat"><span class="stat-n">2/2</span><span class="stat-l">Security tests, run <code>707bm000018WaZv</code></span></div>
+        <div class="stat"><span class="stat-n">30</span><span class="stat-l">Questions asked of the docs, scored</span></div>
+      </div>
+    </div>
+  </header>
+
+  <section class="band">
+    <div class="idx">01</div>
+    <div class="body">
+      <h2>The constraint, and the point of view</h2>
+      <p>Acme runs regulated hiring at scale. Every screening decision is one a regulator or
+        a plaintiff's attorney can ask about two years later, which makes four questions
+        non-negotiable: which version ran, what instructions it had, what data it could see
+        and who granted that, and what it actually did. A PoC that cannot answer those is a
+        science project, however good the output looks on screen.</p>
+      <p>The reflexive assumption is that governance is a tax you pay after the demo — build
+        it fast in the UI, harden it later. <strong>This build is the argument against
+        that.</strong> Author the agent as an Agent Script file, validate locally, publish,
+        activate, test: every step is a <code>sf</code> command whose input is a file you can
+        diff, review, and revert. Once that is true, the audit questions stop being an
+        investigation and become a <code>git log</code>. The UI is a good preview window. It
+        is the wrong place to hold the work.</p>
+
+      <div class="callout">
+        <p>This build's V1 was done entirely in the Agentforce Builder UI. When V2 opened the
+          same org from the CLI, both prior BotVersions were <code>Inactive</code> and the
+          <code>CountCandidates</code> action that had been demoed working in preview existed
+          nowhere as committed metadata — zero <code>GenAiFunctionDefinition</code> records.
+          <strong>A working demo had been built and then silently lost.</strong> No error, no
+          warning, no way to tell from the UI. That is the failure mode source control makes
+          structurally impossible.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="idx">02</div>
+    <div class="body">
+      <h2>Evidence — every V1 failure mode and its CLI antidote</h2>
+      <p class="note" style="margin-bottom:1.6rem;">Read as a diff, because that is what it
+        is: each <span class="pill bad">&minus;</span> is a real problem hit building V1 in
+        the UI, each <span class="pill ok">+</span> the specific V2 mechanism that removes it,
+        with the artifact in this repo where you can check it.</p>
+
+      <div class="diff">
+
+        <div class="pair">
+          <div class="row del"><span class="sign">&minus;</span><span class="txt"><span class="lbl">UI</span>Assistant amnesia — the authoring assistant lost all context on every new draft, timeout, or crash (five times in one session). Every instruction had to be restated in full.</span></div>
+          <div class="row add"><span class="sign">+</span><span class="txt"><span class="lbl">CLI</span>Git history. The agent definition is a file; its state is the diff, not a chat transcript. There is nothing to re-explain.<span class="artifact">git log --oneline &middot; commit 765dc08</span></span></div>
+        </div>
+
+        <div class="pair">
+          <div class="row del"><span class="sign">&minus;</span><span class="txt"><span class="lbl">UI</span>Silently half-applied edits — assistant changes had to be hand-verified in the code view because they were sometimes missed or only partly applied.</span></div>
+          <div class="row add"><span class="sign">+</span><span class="txt"><span class="lbl">CLI</span>You edit the file. No intermediary to second-guess; <code>git diff</code> is the verification.<span class="artifact">force-app/main/default/aiAuthoringBundles/Acme_Enterprise/Acme_Enterprise.agent</span></span></div>
+        </div>
+
+        <div class="pair">
+          <div class="row del"><span class="sign">&minus;</span><span class="txt"><span class="lbl">UI</span>Hallucinated syntax — the assistant invented a <code>retriever://</code> target and a <code>source:</code> attribute that do not exist, then proposed fixes for its own invention across three error cycles.</span></div>
+          <div class="row add"><span class="sign">+</span><span class="txt"><span class="lbl">CLI</span><code>sf agent validate authoring-bundle</code> compiles the script against the real grammar before anything touches the org, and a human reads the diff first. Clean on the first attempt, both actions.<span class="artifact">docs/build-journal.md &middot; rows 3, 22</span></span></div>
+        </div>
+
+        <div class="pair">
+          <div class="row del"><span class="sign">&minus;</span><span class="txt"><span class="lbl">UI</span>Parser-derailing syntax — a <code>with</code> line inside an action <em>definition</em> block produced a phantom "must specify at least one input" error that pointed at the wrong thing entirely.</span></div>
+          <div class="row add"><span class="sign">+</span><span class="txt"><span class="lbl">CLI</span>Same local validate, plus a diff showing the <code>actions:</code> definitions and the <code>reasoning.actions</code> references as adjacent, reviewable hunks.<span class="artifact">git show 765dc08 -M -- '*aiAuthoringBundles*'</span></span></div>
+        </div>
+
+        <div class="pair">
+          <div class="row del"><span class="sign">&minus;</span><span class="txt"><span class="lbl">UI</span>Edited-but-inactive flow — an edited version that was never activated meant the old version stayed live. Roughly an hour spent debugging the wrong layer.</span></div>
+          <div class="row add"><span class="sign">+</span><span class="txt"><span class="lbl">CLI</span><code>&lt;status&gt;Active&lt;/status&gt;</code> is declared in the flow XML and deployed as source. Activation is not a click you can forget; it is a line in the file.<span class="artifact">force-app/main/default/flows/Get_Candidate_Profiles.flow-meta.xml:70</span></span></div>
+        </div>
+
+        <div class="pair">
+          <div class="row del"><span class="sign">&minus;</span><span class="txt"><span class="lbl">UI</span>Run-context mystery — the count returned 0 to the agent but 8 in Debug. Two suspects were identified, one fix was applied, and which one actually worked was never determined.</span></div>
+          <div class="row add"><span class="sign">+</span><span class="txt"><span class="lbl">CLI</span><code>&lt;runInMode&gt;SystemModeWithoutSharing&lt;/runInMode&gt;</code> — one reviewable line, in source, in the diff. The grant is deliberate and legible, not discovered by elimination.<span class="artifact">force-app/main/default/flows/Count_Candidates.flow-meta.xml:61</span></span></div>
+        </div>
+
+        <div class="pair">
+          <div class="row del"><span class="sign">&minus;</span><span class="txt"><span class="lbl">UI</span>Import Wizard mis-mapping — the wizard auto-mapped resume text onto <em>Account</em>: Description instead of Contact: Description. The import did not fail; it just produced a roster with no resumes in it.</span></div>
+          <div class="row add"><span class="sign">+</span><span class="txt"><span class="lbl">CLI</span>Bulk API import from a CSV whose header row <em>is</em> the field mapping, plus a script that asserts the round-trip: 25 candidates, and a real 79-word resume on the record.<span class="artifact">data/candidates-v2.csv &middot; scripts/verify-roster.sh</span></span></div>
+        </div>
+
+        <div class="pair">
+          <div class="row del"><span class="sign">&minus;</span><span class="txt"><span class="lbl">UI</span>Untestable demo — reset the simulator, retype the utterance, eyeball the answer, repeat after every config change, with stale sessions silently testing the old configuration.</span></div>
+          <div class="row add"><span class="sign">+</span><span class="txt"><span class="lbl">CLI</span><code>sf agent test</code> suite: four cases versioned as YAML, run from one command, scored on topic, action, and an LLM judge. 21 seconds end to end.<span class="artifact">tests/agent/acme-triage-testspec.yaml &middot; docs/demo-tests.md</span></span></div>
+        </div>
+
+        <div class="pair">
+          <div class="row del"><span class="sign">&minus;</span><span class="txt"><span class="lbl">UI</span>Work lost entirely — the previous session's apparently-committed work was never persisted. Both BotVersions <code>Inactive</code>; the action absent from the org.</span></div>
+          <div class="row add"><span class="sign">+</span><span class="txt"><span class="lbl">CLI</span>Immutable commits, then explicit <code>sf agent publish authoring-bundle</code> and <code>sf agent activate</code>. BotVersion 3 is Active and byte-identical to what is in the repo.<span class="artifact">docs/build-journal.md &middot; rows 12, 25, 26</span></span></div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="idx">03</div>
+    <div class="body">
+      <h2>Docs scorecard — the honest version</h2>
+      <p>I scored Salesforce's "robust documentation" claim live while building, logging every
+        question I had to ask of the docs and whether they answered it. Thirty questions across
+        eight tasks, with the commands and error text preserved in the journal.</p>
+
+      <div class="meter" role="img" aria-label="Of 30 documentation questions: 16 answered, 4 partial, 9 failed, 1 failed then answered.">
+        <span class="s-ok"></span><span class="s-par"></span><span class="s-bad"></span><span class="s-neu"></span>
+      </div>
+      <p class="meter-cap">30 questions &middot; 53% answered &middot; 13% partial &middot; 30% failed &middot; 3% hybrid</p>
+
+      <div class="scroller">
+        <table>
+          <thead>
+            <tr><th scope="col">Verdict</th><th scope="col">Meaning</th><th scope="col">Count</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="pill ok">answered</span></td><td>Docs solved it outright</td><td class="num">16</td></tr>
+            <tr><td><span class="pill warn">partial</span></td><td>Docs plus trial-and-error</td><td class="num">4</td></tr>
+            <tr><td><span class="pill bad">failed</span></td><td>Docs wrong, absent, or actively misleading</td><td class="num">9</td></tr>
+            <tr><td><span class="pill neu">hybrid</span></td><td>Docs sent me the wrong way; the org corrected them</td><td class="num">1</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p style="margin-top:1.2rem;">Two of the nine failures are not really Salesforce's: one
+        was a local shell quirk, one a defect in this build's own plan caught by code review.
+        <strong>Seven hard documentation failures remain, and all seven sit on the same
+        surface.</strong></p>
+
+      <div class="scroller">
+        <table>
+          <thead>
+            <tr><th scope="col">Surface</th><th scope="col">Questions</th><th scope="col">Answered</th><th scope="col">Partial</th><th scope="col">Failed</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>sf agent</code> + <code>AiAuthoringBundle</code></td><td class="num">22</td><td class="num">11</td><td class="num">3</td><td class="num">7 (+1 hybrid)</td></tr>
+            <tr><td>Flows, Bulk API, Apex</td><td class="num">8</td><td class="num">5</td><td class="num">1</td><td class="num">2 <span style="color:var(--ink-3)">(neither a real docs gap)</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Best moment</h3>
+      <p><code>sf agent test</code>. All four commands describe the full lifecycle in their own
+        help text and cross-reference each other by name, so reading one tells you the next
+        command to run. The newest surface in the build has its best docs — which complicates
+        the easy "new means undocumented" story.</p>
+
+      <h3>Worst moment</h3>
+      <p><code>sf agent publish authoring-bundle</code> and <code>sf agent test run --wait</code>
+        both <strong>exit non-zero with <code>fetch failed</code> on runs that fully
+        succeeded.</strong> The publish that reported failure had created BotVersion 3,
+        registered both function definitions, and logged a <code>Succeeded</code> deploy —
+        provable only by pulling the deploy ID out of the <em>error</em> payload and
+        cross-querying the org. An exit code that lies is worse than a missing flag, because
+        CI is built to trust exactly that signal.</p>
+
+      <h3>Three more worth carrying into a customer conversation</h3>
+      <p><code>AiAuthoringBundle</code> cannot be retrieved or deployed through the Metadata API
+        at any API version this org supports — <code>sf agent publish</code> is the only path.
+        The bundle's folder name must equal the <code>developer_name</code> compiled from inside
+        the <code>.agent</code> file, and <code>-n/--api-name</code> is ignored for that lookup;
+        root-caused by reading the installed plugin's source. And the interactive
+        <code>generate test-spec</code> wizard offers org-suffixed topic and action names that
+        the runtime evaluator can never match, so following the tool's own suggestions builds a
+        permanently-failing suite.</p>
+      <p>None of these are reasons not to build this way. They are the reasons a customer wants
+        a partner who has already hit them.</p>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="idx">04</div>
+    <div class="body">
+      <h2>Security findings</h2>
+      <p>The security story is not a slide. It is a test that runs.</p>
+
+      <h3>Zero data by default, proven non-vacuously</h3>
+      <p><code>SecurityBeatTest</code> inserts a candidate Contact, asserts the admin can see it
+        as a positive control, then runs as a freshly created <em>Minimum Access</em> user and
+        asserts that specific record is invisible. 2/2 pass.</p>
+      <div class="callout">
+        <p>The second half matters more than the result. <strong>The first version of this test
+          was vacuous and passed anyway.</strong> Without <code>SeeAllData</code>, an Apex test
+          sees no pre-existing records for <em>any</em> user, admin included — so "the
+          restricted user sees nothing" was true by construction, and would have passed
+          identically if that profile had full Contact read. A code review caught it; no
+          documentation would have. It stays in the journal as a failure, because a green check
+          that proves nothing is exactly what this PoC is arguing about.</p>
+      </div>
+
+      <h3>Deliberate, declared grants</h3>
+      <p>The agent reads the roster because <code>SystemModeWithoutSharing</code> is one line in
+        the flow XML, in the diff, in the review. The org itself flags it — the deploy returned
+        an informational warning that this mode grants view and edit on all data. Expected,
+        intentional, on the record. In V1 the same grant went in through a UI menu and nobody
+        could later determine whether it was the fix that worked.</p>
+
+      <h3>Immutable versions, and the decoy user</h3>
+      <p>BotVersion 3 is Active; v1 and v2 remain Inactive, and only one version can be active
+        at a time. The agent's <code>default_agent_user</code> is locked after first publish,
+        and this org contains a near-twin user differing only by numeric suffix — during V1 an
+        assistant edit swapped to the decoy and broke validation. In V2 the <code>access:</code>
+        block is a line in a file that no tool rewrites, verified byte-for-byte unchanged across
+        the entire delta.</p>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="idx">05</div>
+    <div class="body">
+      <h2>Test results — the demo ladder as a suite</h2>
+      <p class="note" style="margin-bottom:1.4rem;">Job <code>4KBbm00000032tJGAQ</code>,
+        <code>Acme_Enterprise_Triage_Ladder</code>, completed in 21s.
+        <strong>Topic 4/4 &middot; Action 4/4 &middot; Outcome 3/4.</strong></p>
+
+      <div class="scroller">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">#</th><th scope="col">Utterance</th><th scope="col">Topic</th>
+              <th scope="col">Action</th><th scope="col">Outcome</th><th scope="col">What happened</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="num">1</td>
+              <td>How many candidates have applied?</td>
+              <td><span class="pill ok">pass</span></td>
+              <td><span class="pill ok">pass</span></td>
+              <td><span class="pill ok">pass</span></td>
+              <td>"There are currently 25 candidates on file" — live from CRM via <code>CountCandidates</code>.</td>
+            </tr>
+            <tr>
+              <td class="num">2</td>
+              <td>Who has applied to the Senior Full-Stack Engineer role?</td>
+              <td><span class="pill ok">pass</span></td>
+              <td><span class="pill ok">pass</span></td>
+              <td><span class="pill bad">fail</span></td>
+              <td>Right topic, right action — then the agent asked for a job description instead of listing who is on file. A real product finding, not a test bug.</td>
+            </tr>
+            <tr>
+              <td class="num">3</td>
+              <td>Screen all candidates on file for: Senior Full-Stack Engineer&hellip; 5+ years, React/TypeScript, Node, AWS.</td>
+              <td><span class="pill ok">pass</span></td>
+              <td><span class="pill ok">pass</span></td>
+              <td><span class="pill ok">pass</span></td>
+              <td>Ranked top-5 led by Elena Vasquez (98/100), five &#9888; human-review flags, and two resumes named as AI-padded with the specific mismatch.</td>
+            </tr>
+            <tr>
+              <td class="num">4</td>
+              <td>Draft a short outreach email to the strongest candidate.</td>
+              <td><span class="pill ok">pass</span></td>
+              <td><span class="pill ok">pass</span></td>
+              <td><span class="pill warn">borderline</span></td>
+              <td>Email addressed to "Elena" — first name only. The judge scored it 3/5 and flagged that the surname never appears.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p style="margin-top:1.2rem;">Three of four pass, and case 2 is on the page rather than
+        edited out. That is the point of running the ladder as a suite instead of a script
+        someone retypes: <strong>when the agent is wrong, one command says exactly
+        where.</strong></p>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="idx">06</div>
+    <div class="body">
+      <h2>The art of the possible</h2>
+      <p class="note" style="margin-bottom:1.5rem;">Each of these is an increment on machinery
+        that already works, not a rebuild.</p>
+      <ul class="fwd">
+        <li><span class="k">Auto-screen on arrival</span><span class="v">A record-triggered flow fires the same screening topic the moment an application lands, so the recruiter opens a triaged queue instead of an inbox. The agent is already invoked by flow; only the trigger changes.</span></li>
+        <li><span class="k">Candidate-facing agent</span><span class="v">The same governed pattern pointed outward — status, scheduling, follow-up questions — with the never-auto-reject and equitable-treatment rules enforced by the same instructions the recruiter's agent uses.</span></li>
+        <li><span class="k">ATS integration</span><span class="v">Today the requisition is pasted in. In production it arrives from the ATS and the screening result posts back; the profile text already moves through a declared flow interface, which is where the connector attaches.</span></li>
+        <li><span class="k">AgentExchange</span><span class="v">A regulated-hiring screening agent packaged with its flows, permission model, and test suite. The tests travel with it, so the buyer verifies governance before installing rather than trusting a demo.</span></li>
+      </ul>
+
+      <div class="callout" style="margin-top:2rem;">
+        <p>You do not have to choose between shipping fast and shipping something you can defend
+          to a regulator. The UI path cost a lost build, an hour on an inactive flow version, an
+          import that silently mapped resumes onto the wrong object, and a root cause never
+          confirmed. The CLI path produced a live, activated, tested agent with a complete audit
+          trail — and a scorecard honest enough to include its own failures.
+          <strong>Governance is not the tax on the demo. It is what makes the demo mean
+          something.</strong></p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Built 2026-08-11 &middot; org <code>renewal-org</code> (Developer Edition) &middot; Salesforce CLI 2.145.6<br>
+    Repo artifacts: docs/pov-brief.md &middot; docs/build-journal.md &middot; docs/demo-tests.md &middot; docs/demo-runbook.md<br>
+    Agentforce Builder UI opened zero times.
+  </footer>
+
+</div>

@@ -33,3 +33,75 @@ Verdicts: **answered** (docs solved it), **partial** (docs + trial-and-error), *
 | 7 | Does the `Minimum Access - Salesforce` profile actually exist in this org, or does the brief's fallback (query `Profile`, pick the most restrictive) need to trigger? | `sf data query -q "SELECT Id, Name FROM Profile WHERE Name = 'Minimum Access - Salesforce'"` | answered | Exists cleanly — one record returned (`00ebm00000MDYvOAAX`). No fallback needed; the brief's `SecurityBeatTest.cls` code was usable verbatim for `newUserWithNoGrantsSeesNothing`. |
 | 7 | Does the brief's baked-in correction — method-level `@IsTest(SeeAllData=true)` on `declaredSystemContextSeesTheRoster` only, leaving `newUserWithNoGrantsSeesNothing` plain `@IsTest` in the same class — compile and behave as described (flow interview sees the 25 org Contacts; the zero-privilege test stays data-independent)? | `sf project deploy start -m "ApexClass:SecurityBeatTest"` then `sf apex run test --tests SecurityBeatTest --result-format human --wait 10` | answered | Deployed clean (`numberComponentErrors: 0`) and ran clean on the first attempt — no compile error, no mixed-DML/SeeAllData surprise. Both tests passed: `declaredSystemContextSeesTheRoster` (433 ms) confirms the flow's declared `SystemModeWithoutSharing` run context returns the full org roster even though the test method itself inserts no data; `newUserWithNoGrantsSeesNothing` (569 ms) confirms a bare `Minimum Access - Salesforce` user querying `Contact WITH USER_MODE` sees nothing. 2/2 pass, `Test Run Id 707bm000018WlF9`. No fallback needed — the brief's correction as written was sufficient. |
 | 7 | Was `newUserWithNoGrantsSeesNothing`, as written verbatim from the brief, actually proving anything about least-privilege enforcement? | Code review (Critical finding, post-implementation) | failed | No — it was vacuous. Without `SeeAllData`, an Apex test method sees zero pre-existing records for *any* user, admin included, so `Database.query('SELECT Id FROM Contact WITH USER_MODE')` was guaranteed to return an empty list (or throw on object-access denial) regardless of whether real FLS/CRUD security was enforced for the bare user — `blocked` was true by construction and the `Assert.isTrue` could never fail. The test would have passed identically even if the `Minimum Access - Salesforce` profile secretly had full Contact read. Caught in review, not by any doc — this is exactly the class of bug the passing-but-meaningless test represents, which is why the build journal exists to record it. Fixed by inserting a real `Contact` as the admin test user *before* `System.runAs(bare)` (test-created data is visible in test context without `SeeAllData`), adding a positive-control assertion that the admin can see it, then inside `runAs(bare)` asserting the specific inserted record's Id is absent from what the bare user sees (or that the query throws outright) — so a real security regression (bare user gaining Contact read) would now make the test fail. Redeployed and reran: 2/2 pass, new `Test Run Id 707bm000018W2DZ`. |
+| 8 | For the runbook's "agent test framework is unusable" fallback, does `sf agent preview` need a separately linked/connected client app, or is `-n <api-name>` on an activated agent enough? | `sf agent preview --help` | answered | `--help` documents the full flag set clearly: `-n/--api-name` is "API name of the activated published agent you want to interact with," `--authoring-bundle` is the alternative for previewing a *local* Agent Script file before publishing, and `--use-live-actions` is documented as the opt-in for real (vs. AI-simulated/mocked) actions. The default-is-mocked behavior is the important, well-documented detail — an unqualified `sf agent preview` would demo simulated flow calls, which is exactly the wrong thing to show a customer. No connected-app setup is mentioned or needed for an activated agent.
+| 8 | For re-fetching a prior suite's results in the runbook, does `sf agent test results` support `--use-most-recent` as an alternative to hunting down the job ID? | `sf agent test results --help`, then running the flag | failed | The `--help` output is self-contradictory. Its DESCRIPTION says "You can also use the --use-most-recent flag to see..." and two of its EXAMPLES are literally `sf agent test results --use-most-recent --target-org my-org` — but the flag appears nowhere in the FLAGS list, and USAGE marks `-i, --job-id` as `(required)`. Running it: `Error (2): Nonexistent flag: --use-most-recent` (CLI 2.145.6). The command's own documented examples do not run. Corrected `docs/demo-tests.md`, which had repeated the phantom flag from this same help text. |
+
+## Final scorecard — did "robust docs" hold?
+
+**30 questions asked of the docs across 8 tasks.**
+
+| Verdict | Count | Share |
+|---|---|---|
+| **answered** — docs solved it outright | 16 | 53% |
+| **partial** — docs plus trial-and-error | 4 | 13% |
+| **failed** — docs wrong, absent, or actively misleading | 9 | 30% |
+| **failed, then answered** — docs sent me the wrong way, empirical result corrected it | 1 | 3% |
+
+Two of the nine failures deserve an asterisk in Salesforce's favor: the
+`verify-roster.sh` JSON parse failure (Task 3) was a local `FORCE_COLOR=3`
+shell quirk, not a documentation gap, and the vacuous-security-test failure
+(Task 7) was a defect in *this build's own plan*, caught by code review. Netting
+those out, **seven hard documentation failures remain — and all seven are on the
+`sf agent` / `AiAuthoringBundle` surface.**
+
+**Split by surface age:**
+
+| Surface | Rows | answered | partial | failed |
+|---|---|---|---|---|
+| `sf agent` + `AiAuthoringBundle` (Tasks 1, 2, 5, 6, 8) | 22 | 11 | 3 | 7 (+1 hybrid) |
+| Flows, Bulk API data, Apex (Tasks 3, 4, 7) | 8 | 5 | 1 | 2 (neither a real docs gap) |
+
+### Best doc moment
+
+`sf agent test` (Task 6, row 20). All four commands — `generate test-spec`,
+`test create`, `test run`, `test results` — describe the full lifecycle in their
+own `--help` text *and cross-reference each other by name*, so reading any one
+of them tells you the next command to run. `generate test-spec --help` even
+volunteers a non-obvious scoping fact ("doesn't look in your org") before you
+can trip over it. This is the newest surface in the entire build and it has the
+best documentation in the entire build — which cuts against the simple
+"new = undocumented" story. (Caveat, found in Task 8: the same otherwise-
+excellent `test results --help` documents a `--use-most-recent` flag in its own
+examples that does not exist in the shipped command. Best-in-build still ships a
+copy-paste example that errors.)
+
+### Worst doc moment
+
+`sf agent publish authoring-bundle` and `sf agent test run --wait` both **exit
+non-zero with `fetch failed` on runs that fully succeeded server-side** (Task 5,
+rows 25/18; Task 6, row 32). The publish that reported failure had in fact
+created BotVersion 3, registered both `GenAiFunctionDefinition` records, and
+logged a `Succeeded` deploy — provable only by cross-querying the org with the
+deploy ID buried in the *error* payload. No `--help` text, error message, or doc
+warns of this. An exit code that lies is worse than an undocumented flag: it is
+the one signal a CI pipeline is built to trust, and here it would have failed
+every green build.
+
+Runner-up, and arguably worse for a first-time user: the CLI's own interactive
+`generate test-spec` wizard offers org-suffixed topic/action names
+(`candidate_screening_16jbm000002K4hR`) that the runtime evaluator can never
+match, because it compares against short local developer names (Task 6, row 30).
+Following the tool's own suggestions produces a permanently-failing test suite.
+
+### The one-sentence verdict
+
+"Robust docs" held completely for the mature surfaces — flows, Bulk API imports,
+and Apex produced zero genuine documentation failures across eight questions and
+every command worked as written the first time — while the newest surface,
+`sf agent` / `AiAuthoringBundle`, is a split personality: excellently documented
+where it is documented (the test lifecycle), and silent exactly where it hurts
+most (metadata-type deploy gaps, the folder-name-equals-developer-name rule,
+and success reported as failure), such that seven of the twenty-two questions on
+that surface were answerable only by reading the installed plugin's source, by
+cross-querying the org to find out what had actually happened, or by running a
+documented example and watching it error.

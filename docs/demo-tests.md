@@ -41,7 +41,10 @@ sf agent test run \
   --wait 10 \
   --verbose
 
-# Re-fetch results for a prior run by job ID (or --use-most-recent)
+# Re-fetch results for a prior run by job ID. `-i/--job-id` is REQUIRED —
+# `sf agent test results --help` shows a `--use-most-recent` flag in its own
+# examples, but that flag does not exist in this CLI version (2.145.6) and
+# errors with "Nonexistent flag". See journal row 8.
 sf agent test results --job-id <JOB_ID> -o renewal-org --verbose
 ```
 
