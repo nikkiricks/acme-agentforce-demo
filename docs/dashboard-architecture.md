@@ -7,6 +7,13 @@ agentic-hiring mandate after losing its largest enterprise logo to an AI-native 
 `customerPipelineDashboard` ("Acme for Customers — Pipeline View") is the product Acme ships —
 what one staffing customer sees — kept as a separate component for Q&A.
 
+`agenticExperienceBoard` additionally takes a `persona` design attribute (`board` | `product`),
+set per Lightning page in App Builder, that scopes the whole presentation — titles, tiles,
+chart annotation, and the pipeline's hero node — to a CEO or VP-Product audience. The
+asymmetry is deliberate and is the talking point: the LWC knows about personas, the data
+service does not — `getBoardMetrics()` returns one audience-agnostic superset of metrics, and
+which of them appear on screen is page configuration, not code.
+
 Both are pure presentation layers bound to typed Apex contracts
 (`AgenticExperienceBoardController` / `CustomerPipelineController`); the components know
 nothing about where numbers come from. `getCandidateSideStats()` is a real `WITH USER_MODE`

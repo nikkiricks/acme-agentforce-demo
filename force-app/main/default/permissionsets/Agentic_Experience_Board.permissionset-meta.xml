@@ -18,4 +18,8 @@
         <tab>Agentic_Experience_Board_View</tab>
         <visibility>Visible</visibility>
     </tabSettings>
+    <tabSettings>
+        <tab>Agentic_Experience_Product_View</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
 </PermissionSet>

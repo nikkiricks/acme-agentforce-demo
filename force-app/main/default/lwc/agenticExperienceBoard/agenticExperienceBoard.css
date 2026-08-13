@@ -46,6 +46,31 @@
     white-space: nowrap;
 }
 
+.persona-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--board-ink-muted);
+    font-size: 0.75rem;
+    border: 1px solid var(--board-rule);
+    border-radius: 999px;
+    padding: 0.15rem 0.65rem 0.15rem 0.25rem;
+    white-space: nowrap;
+}
+
+.persona-avatar {
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 50%;
+    background: #12284b;
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6875rem;
+    font-weight: 700;
+}
+
 .board-header {
     row-gap: 0.5rem;
 }
@@ -75,6 +100,12 @@
     color: var(--board-ink-muted);
     font-size: 0.75rem;
     margin-top: 0.25rem;
+}
+
+.kpi-note {
+    color: var(--board-ink-muted);
+    font-size: 0.6875rem;
+    margin-top: 0.125rem;
 }
 
 /* Deltas carry direction with the glyph and the label's wording — never
@@ -128,6 +159,18 @@
     width: 100%;
     height: auto;
     display: block;
+}
+
+/* Screening-volume context area (product persona): neutral gray, background
+   only — its endpoint label does the naming, no second axis, no legend. */
+.chart-volume {
+    fill: rgba(138, 145, 161, 0.18);
+    stroke: none;
+}
+
+.chart-volume-label {
+    fill: var(--board-ink-muted);
+    font-size: 12px;
 }
 
 .chart-floor {
@@ -218,6 +261,27 @@
 .pipeline-label {
     color: var(--board-ink-muted);
     font-size: 0.6875rem;
+    white-space: nowrap;
+}
+
+/* Product persona: the flagged stage is the hero node — the
+   human-in-the-loop checkpoint. */
+.pipeline-cell_hero {
+    border: 1px solid var(--board-accent);
+    background: rgba(47, 93, 168, 0.08);
+    border-radius: 0.5rem;
+    padding: 0.35rem 0.6rem;
+}
+
+.pipeline-cell_hero .pipeline-value {
+    color: var(--board-accent);
+}
+
+.pipeline-hero-caption {
+    color: var(--board-accent);
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
     white-space: nowrap;
 }
 

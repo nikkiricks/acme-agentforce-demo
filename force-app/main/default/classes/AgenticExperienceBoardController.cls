@@ -67,6 +67,20 @@ public with sharing class AgenticExperienceBoardController {
         99.0, 98.4, 95.9, 96.2, 96.8
     };
 
+    // Screening volume (thousands per period), aligned index-for-index with
+    // the time-to-shortlist series above. The product-view chart shades this
+    // behind the line: time-to-shortlist held flat while volume went ~5x.
+    // End values tie out with the screenings tile (18.4K/day · 128K/wk · 552K/mo).
+    private static final List<Decimal> DAILY_VOL = new List<Decimal>{
+        17.2, 17.5, 17.1, 17.8, 17.6, 18.0, 17.9, 18.1, 17.8, 18.2, 18.0, 18.3, 18.1, 18.4
+    };
+    private static final List<Decimal> WEEKLY_VOL = new List<Decimal>{
+        26, 34, 43, 55, 66, 78, 89, 99, 108, 116, 123, 128
+    };
+    private static final List<Decimal> MONTHLY_VOL = new List<Decimal>{
+        92, 168, 264, 372, 468, 552
+    };
+
     // Fixed English month abbreviations — label text must not drift with the
     // org locale between rehearsal and the live run.
     private static final List<String> MONTHS = new List<String>{
@@ -121,6 +135,36 @@ public with sharing class AgenticExperienceBoardController {
             stage('Flagged for review', '33.3K'), stage('Outreach sent', '43.7K')
         };
         m.pipeline.placements = 480;
+
+        // The payload is a SUPERSET: every metric the component might render,
+        // named by metric, never by audience. Which fields appear on screen is
+        // the LWC's persona configuration — this service does not know
+        // personas exist.
+        m.activeRecruiters = tile('activeRecruiters',
+            'Weekly active recruiters on agent screening', '1,340',
+            delta(g == 'DAILY' ? '2%' : (g == 'WEEKLY' ? '5%' : '14%'), vsPrior, true));
+        m.activeRecruiters.note = '68% of eligible seats';
+
+        // Trending down but floored around ~5% by design: a 0% override rate
+        // would read as "nobody is checking the agent," not as quality.
+        m.overrideRate = tile('overrideRate', 'Recruiter override rate', '9.4%',
+            delta(g == 'DAILY' ? '0.2 pts' : (g == 'WEEKLY' ? '0.5 pts' : '1.3 pts'),
+                vsPrior, false));
+
+        m.firstResponse = tile('firstResponse',
+            'Median candidate first-response time', '11 min',
+            delta(g == 'DAILY' ? '1 min' : (g == 'WEEKLY' ? '2 min' : '6 min'),
+                vsPrior, false));
+        m.firstResponse.note = 'pre-agent: 26 hrs';
+
+        m.releaseVelocity = tile('releaseVelocity',
+            'Spec → GA vs 12-wk board mandate ✓', '11 weeks', null);
+        m.releaseVelocity.note = '4 releases since GA · 82% delivered via config';
+
+        m.volume = g == 'DAILY' ? DAILY_VOL : (g == 'WEEKLY' ? WEEKLY_VOL : MONTHLY_VOL);
+        m.volumeEndLabel =
+            g == 'DAILY' ? '18.4K/day' : (g == 'WEEKLY' ? '128K/wk' : '552K/mo');
+
         return m;
     }
 
@@ -187,13 +231,22 @@ public with sharing class AgenticExperienceBoardController {
         @AuraEnabled public Decimal baselineDays;
         @AuraEnabled public String baselineLabel;
         @AuraEnabled public Pipeline pipeline;
+        // Superset metrics, named by metric — the LWC's persona configuration
+        // decides which appear; this contract stays audience-agnostic.
+        @AuraEnabled public KpiTile activeRecruiters;
+        @AuraEnabled public KpiTile overrideRate;
+        @AuraEnabled public KpiTile firstResponse;
+        @AuraEnabled public KpiTile releaseVelocity;
+        @AuraEnabled public List<Decimal> volume;     // aligned with trend
+        @AuraEnabled public String volumeEndLabel;    // '128K/wk'
     }
 
     public class KpiTile {
         @AuraEnabled public String key;
         @AuraEnabled public String label;
         @AuraEnabled public String value;   // pre-formatted: '42 of 400', '128K', '96.8%'
-        @AuraEnabled public KpiDelta delta;
+        @AuraEnabled public KpiDelta delta; // null = no delta row (e.g. a met mandate)
+        @AuraEnabled public String note;    // optional sub-line: '68% of eligible seats'
     }
 
     public class KpiDelta {

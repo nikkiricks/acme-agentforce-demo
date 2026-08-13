@@ -3,8 +3,15 @@
     <apiVersion>64.0</apiVersion>
     <isExposed>true</isExposed>
     <masterLabel>Agentic Experience Board</masterLabel>
-    <description>Executive board view: one platform, Daily/Weekly/Monthly toggle, client and candidate sides combined in one pipeline.</description>
+    <description>Persona-scoped executive dashboard: board (CEO) or product (VP Product) presentation of the same data service — configured per page, not coded.</description>
     <targets>
         <target>lightning__AppPage</target>
     </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__AppPage">
+            <property name="persona" label="Persona" type="String"
+                      datasource="board,product" default="board"
+                      description="Which persona-scoped presentation to render: board (CEO altitude) or product (VP Product altitude). Same component, same data service."/>
+        </targetConfig>
+    </targetConfigs>
 </LightningComponentBundle>

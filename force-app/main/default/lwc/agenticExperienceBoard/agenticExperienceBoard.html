@@ -1,13 +1,16 @@
 <template>
     <article class="slds-card board slds-p-around_medium">
 
-        <!-- Header row: title + subtitle · last refreshed · D/W/M toggle -->
+        <!-- Header row: title + subtitle · persona chip · last refreshed · D/W/M toggle -->
         <div class="slds-grid slds-grid_vertical-align-center slds-wrap board-header">
             <div>
-                <h1 class="slds-text-heading_medium board-title">Acme Agentic Experience — Board View</h1>
-                <p class="board-subtitle">Agentic hiring rollout &middot; all customers, one platform</p>
+                <h1 class="slds-text-heading_medium board-title">{title}</h1>
+                <p class="board-subtitle">{subtitle}</p>
             </div>
             <div class="slds-col_bump-left slds-grid slds-grid_vertical-align-center">
+                <span class="persona-chip slds-m-right_medium">
+                    <span class="persona-avatar" aria-hidden="true">{personaInitial}</span>{personaChip}
+                </span>
                 <span class="board-refreshed slds-m-right_medium" lwc:if={lastRefreshed}>
                     Last refreshed&nbsp;
                     <lightning-formatted-date-time
@@ -41,14 +44,15 @@
 
         <template lwc:if={isReady}>
 
-            <!-- Exactly 4 KPI tiles -->
+            <!-- Exactly 4 KPI tiles (persona swaps content, never count) -->
             <div class="slds-grid slds-gutters slds-wrap slds-m-top_medium">
-                <template for:each={seededTiles} for:item="tile">
+                <template for:each={displayTiles} for:item="tile">
                     <div key={tile.key} class="slds-col slds-size_1-of-2 slds-medium-size_1-of-4 slds-m-bottom_small">
                         <div class="kpi slds-box">
                             <div class="kpi-value">{tile.value}</div>
                             <div class="kpi-label">{tile.label}</div>
-                            <div class="kpi-delta">
+                            <div class="kpi-note" lwc:if={tile.note}>{tile.note}</div>
+                            <div class="kpi-delta" lwc:if={tile.deltaText}>
                                 <span class="kpi-glyph">{tile.glyph}</span>
                                 {tile.deltaText}
                             </div>
@@ -60,11 +64,13 @@
                 </template>
             </div>
 
-            <!-- One trend chart: median time-to-shortlist vs pre-agent baseline -->
+            <!-- One trend chart: median time-to-shortlist vs pre-agent baseline
+                 (product persona shades screening volume behind it) -->
             <div class="slds-box board-section slds-m-top_x-small" lwc:if={chart}>
-                <h2 class="section-title">Median time-to-shortlist across live customers</h2>
+                <h2 class="section-title">{chartTitle}</h2>
                 <svg class="board-chart" viewBox="0 0 600 220" preserveAspectRatio="xMidYMid meet"
-                     role="img" aria-label="Median time-to-shortlist across live customers against the pre-Agentforce baseline">
+                     role="img" aria-label={chartTitle}>
+                    <polygon lwc:if={chart.volumePoints} class="chart-volume" points={chart.volumePoints}></polygon>
                     <line class="chart-floor" x1="14" y1="192" x2="592" y2="192"></line>
                     <line class="chart-baseline" x1="14" y1={chart.baselineY} x2="592" y2={chart.baselineY}></line>
                     <text class="chart-baseline-label" x="592" y={chart.baselineLabelY}
@@ -72,6 +78,8 @@
                     <polyline class="chart-series" points={chart.points}></polyline>
                     <circle class="chart-dot" cx={chart.dotX} cy={chart.dotY} r="4"></circle>
                     <text class="chart-end-label" x={chart.endLabelX} y={chart.endLabelY}>{chart.endText}</text>
+                    <text lwc:if={chart.volumeLabel} class="chart-volume-label"
+                          x={chart.volumeLabel.x} y={chart.volumeLabel.y}>{chart.volumeLabel.text}</text>
                     <text class="chart-axis-label" x="14" y="210">{chart.firstLabel}</text>
                     <text class="chart-axis-label" x={chart.lastX} y="210" text-anchor="end">{chart.lastLabel}</text>
                 </svg>
@@ -89,7 +97,7 @@
                         <div class="pipeline-cells">
                             <template for:each={clientCells} for:item="cell">
                                 <div key={cell.label} class="pipeline-flow">
-                                    <div class="pipeline-cell">
+                                    <div class={cell.cls}>
                                         <div class="pipeline-value">{cell.value}</div>
                                         <div class="pipeline-label">{cell.label}</div>
                                     </div>
@@ -108,9 +116,10 @@
                             <template for:each={candidateCellsInward} for:item="cell">
                                 <div key={cell.label} class="pipeline-flow">
                                     <span class="pipeline-arrow" aria-hidden="true">&#8592;</span>
-                                    <div class="pipeline-cell">
+                                    <div class={cell.cls}>
                                         <div class="pipeline-value">{cell.value}</div>
                                         <div class="pipeline-label">{cell.label}</div>
+                                        <div class="pipeline-hero-caption" lwc:if={cell.heroCaption}>{cell.heroCaption}</div>
                                     </div>
                                 </div>
                             </template>

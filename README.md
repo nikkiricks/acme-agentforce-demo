@@ -116,7 +116,8 @@ sf org open                                              # org home, logged in
 sf org open -p "/lightning/setup/EinsteinCopilot/home"   # Agentforce Agents — open "Acme Enterprise" for the Builder view + preview pane
 sf org open -p "/lightning/setup/Flows/home"             # the two CLI-authored flows
 sf org open -p "/lightning/o/Contact/list"               # the 25-candidate roster
-sf org open -p "/lightning/n/Agentic_Experience_Board_View"  # Acme's board dashboard (Acme Agentic Experience — Board View)
+sf org open -p "/lightning/n/Agentic_Experience_Board_View"  # Acme's board dashboard (persona="board", CEO altitude)
+sf org open -p "/lightning/n/Agentic_Experience_Product_View"  # same LWC, persona="product" (VP Product altitude)
 sf org open -p "/lightning/n/Acme_for_Customers_Pipeline_View"  # the customer-altitude pipeline view (Q&A only)
 ```
 

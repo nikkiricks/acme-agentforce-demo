@@ -5,7 +5,7 @@
             <componentInstance>
                 <componentInstanceProperties>
                     <name>persona</name>
-                    <value>board</value>
+                    <value>product</value>
                 </componentInstanceProperties>
                 <componentName>agenticExperienceBoard</componentName>
                 <identifier>agenticExperienceBoard1</identifier>
@@ -14,7 +14,7 @@
         <name>main</name>
         <type>Region</type>
     </flexiPageRegions>
-    <masterLabel>Acme Agentic Experience — Board View</masterLabel>
+    <masterLabel>Acme Agentic Experience — Product View</masterLabel>
     <template>
         <name>flexipage:defaultAppHomeTemplate</name>
     </template>

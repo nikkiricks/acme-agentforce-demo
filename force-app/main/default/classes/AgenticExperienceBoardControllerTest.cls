@@ -47,6 +47,46 @@ private class AgenticExperienceBoardControllerTest {
         Assert.isTrue(m.pipeline.placements > 0, 'The two sides must meet at placements');
     }
 
+    // The payload is a superset covering every persona the LWC can render;
+    // the service itself is audience-agnostic. These are the product-view
+    // fields, present at every granularity with a volume series that always
+    // aligns index-for-index with the trend it shades.
+    @IsTest
+    static void supersetPayloadCoversTheProductMetrics() {
+        for (String g : new List<String>{ 'DAILY', 'WEEKLY', 'MONTHLY' }) {
+            AgenticExperienceBoardController.BoardMetrics m =
+                AgenticExperienceBoardController.getBoardMetrics(g);
+            Assert.areEqual('1,340', m.activeRecruiters.value,
+                'Weekly active recruiters at granularity ' + g);
+            Assert.areEqual('68% of eligible seats', m.activeRecruiters.note,
+                'Adoption note rides the recruiters tile');
+            // Floor check: the override rate trends down but must never read
+            // as ~0% — a 0% override rate means nobody is checking the agent.
+            Assert.areEqual('9.4%', m.overrideRate.value, 'Override rate value');
+            Assert.isTrue(m.overrideRate.value.startsWith('9'),
+                'Override rate stays well above the ~5% floor');
+            Assert.isTrue(!m.overrideRate.delta.up, 'Override rate trends down');
+            Assert.areEqual('11 min', m.firstResponse.value, 'First-response time');
+            Assert.areEqual('pre-agent: 26 hrs', m.firstResponse.note,
+                'First-response tile carries the pre-agent comparison');
+            Assert.areEqual('11 weeks', m.releaseVelocity.value, 'Spec-to-GA velocity');
+            Assert.isTrue(m.releaseVelocity.delta == null,
+                'A met mandate has no delta row');
+            Assert.isTrue(m.releaseVelocity.note.contains('82%'),
+                'Velocity note carries the config-vs-code split');
+            Assert.areEqual(m.trend.size(), m.volume.size(),
+                'Volume series aligns with the trend it shades at ' + g);
+        }
+        // The product chart's caption promises ~5x: weekly volume must back it.
+        AgenticExperienceBoardController.BoardMetrics weekly =
+            AgenticExperienceBoardController.getBoardMetrics('WEEKLY');
+        Decimal first = weekly.volume[0];
+        Decimal last = weekly.volume[weekly.volume.size() - 1];
+        Assert.isTrue(last >= first * 4.5, 'Screening volume grew ~5x across the weekly series');
+        Assert.areEqual('128K/wk', weekly.volumeEndLabel,
+            'Volume end label ties out with the screenings tile');
+    }
+
     // Retention is Acme's own enterprise-logo churn story: the seeded series
     // dips the quarter the Fortune 500 retailer left, then recovers with the
     // agentic rollout. Quarterly by nature — the tile must NOT re-cut with
