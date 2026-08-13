@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Acme Board View</title>
+<style>
+  :root {
+    --paper:      #f4f5f8;
+    --surface:    #ffffff;
+    --surface-2:  #f8f9fb;
+    --ink:        #101623;
+    --ink-2:      #545c6e;
+    --ink-3:      #8a91a1;
+    --rule:       #e3e6ec;
+    --rule-firm:  #c9cedb;
+    --brand:      #12284b;   /* Acme navy */
+    --brand-ink:  #ffffff;
+    --accent:     #e8590c;   /* freight orange — brand chrome only, never status */
+    --data:       #2f5da8;   /* validated chart step of the brand hue — agent-driven data */
+    --baseline:   #8a91a1;   /* neutral context: pre-agent baseline, arrows */
+    --ok:         #0ca30c;
+
+    --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { color-scheme: light; }
+  body {
+    font-family: var(--sans);
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  /* ---------- top bar ---------- */
+  .topbar {
+    background: var(--brand);
+    color: var(--brand-ink);
+    display: flex; align-items: center; gap: 2rem;
+    padding: 0 1.5rem;
+    height: 56px;
+  }
+  .logo { display: flex; align-items: center; gap: .65rem; }
+  .logo-mark {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: var(--accent);
+    display: grid; place-items: center;
+    font-weight: 800; font-size: 15px; color: #fff;
+  }
+  .wordmark { font-weight: 700; letter-spacing: .14em; font-size: .8rem; }
+  .wordmark small { display: block; font-weight: 400; letter-spacing: .04em; font-size: .68rem; color: #a8b4c9; }
+  .topnav { display: flex; gap: .25rem; margin-left: .5rem; }
+  .topnav a {
+    color: #c4cddd; text-decoration: none; font-size: .85rem;
+    padding: .35rem .75rem; border-radius: 6px;
+  }
+  .topnav a:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .topnav a[aria-current] {
+    color: #fff; font-weight: 600;
+    background: rgba(255,255,255,0.10);
+    box-shadow: inset 0 -2px 0 var(--accent);
+  }
+  .topbar .who { margin-left: auto; display: flex; align-items: center; gap: .6rem; font-size: .85rem; color: #d7deea; }
+  .avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: #2c4571; color: #fff;
+    display: grid; place-items: center; font-size: .8rem; font-weight: 600;
+  }
+
+  main { max-width: 1080px; margin: 0 auto; padding: 1.5rem 1.5rem 2rem; }
+
+  /* ---------- page header row ---------- */
+  .head { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1rem; margin: .25rem 0 1.25rem; }
+  .head h1 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.01em; }
+  .head .sub { color: var(--ink-2); font-size: .85rem; margin-top: .15rem; }
+  .head .right { margin-left: auto; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+  .refreshed { font-size: .78rem; color: var(--ink-2); white-space: nowrap; }
+  .toggle { display: inline-flex; border: 1px solid var(--rule-firm); border-radius: 8px; overflow: hidden; }
+  .toggle button {
+    font: inherit; font-size: .82rem; padding: .35rem .85rem; cursor: pointer;
+    background: var(--surface); color: var(--ink-2); border: 0;
+  }
+  .toggle button + button { border-left: 1px solid var(--rule-firm); }
+  .toggle button[aria-pressed="true"] { background: var(--brand); color: #fff; font-weight: 600; }
+  .toggle button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  /* ---------- cards & sections ---------- */
+  section { margin-bottom: 1.25rem; }
+  .card {
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 10px;
+    padding: 1rem 1.15rem;
+  }
+  .card h2 {
+    font-size: .8rem; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--ink-2); font-weight: 650; margin-bottom: .75rem;
+  }
+  .card .src { float: right; font-size: .7rem; color: var(--ink-3); font-family: var(--mono); text-transform: none; letter-spacing: 0; }
+  .card .cap { float: right; font-size: .74rem; color: var(--ink-3); text-transform: none; letter-spacing: 0; }
+
+  /* ---------- KPI tiles ---------- */
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: .75rem; }
+  .kpi {
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 10px;
+    padding: .9rem 1rem; min-width: 0;
+  }
+  .kpi .num { font-size: 1.7rem; font-weight: 700; line-height: 1.15; font-variant-numeric: tabular-nums; }
+  .kpi .label { font-size: .78rem; color: var(--ink-2); margin-top: .15rem; }
+  .kpi .delta { font-size: .76rem; color: var(--ink-2); margin-top: .45rem; }
+  .kpi .delta .glyph { font-size: .62rem; }
+  .kpi .live { font-size: .7rem; color: var(--ink-2); margin-top: .3rem; text-transform: uppercase; letter-spacing: .04em; }
+  .kpi .live .dot {
+    display: inline-block; width: .42rem; height: .42rem; border-radius: 50%;
+    background: var(--ok); margin-right: .3rem;
+  }
+
+  /* ---------- trend chart ---------- */
+  .chart-wrap { position: relative; }
+  .chart-wrap svg { width: 100%; height: auto; display: block; }
+  .chart-floor { stroke: var(--rule); stroke-width: 1; }
+  .chart-base  { stroke: var(--baseline); stroke-width: 1; stroke-dasharray: 4 4; }
+  .chart-base-label, .chart-axis-label { fill: var(--baseline); font-size: 12px; font-family: var(--sans); }
+  .chart-series { fill: none; stroke: var(--data); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .chart-dot { fill: var(--data); stroke: #fff; stroke-width: 2; }
+  .chart-end-label { fill: var(--ink); font-size: 13px; font-weight: 700; font-family: var(--sans); }
+  .hover-dot { fill: var(--data); stroke: #fff; stroke-width: 2; opacity: 0; }
+  .hover-line { stroke: var(--rule-firm); stroke-width: 1; opacity: 0; }
+  .tip {
+    position: absolute; pointer-events: none; opacity: 0;
+    background: var(--ink); color: #fff; font-size: .74rem;
+    padding: .25rem .55rem; border-radius: 6px; white-space: nowrap;
+    transform: translate(-50%, -140%);
+  }
+  details.chart-data { margin-top: .5rem; font-size: .78rem; color: var(--ink-2); }
+  details.chart-data summary { cursor: pointer; }
+  details.chart-data table { border-collapse: collapse; margin-top: .4rem; }
+  details.chart-data td, details.chart-data th {
+    border-bottom: 1px solid var(--rule); padding: .25rem .7rem .25rem 0;
+    text-align: left; font-weight: 400; font-family: var(--mono); font-size: .74rem;
+  }
+
+  /* ---------- two sides, one pipeline ---------- */
+  .pipeline { display: flex; align-items: center; justify-content: center; gap: .75rem; flex-wrap: wrap; }
+  .pipe-side { min-width: 0; }
+  .pipe-caption {
+    color: var(--ink-3); font-size: .68rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .06em; margin-bottom: .35rem;
+  }
+  .pipe-side.right .pipe-caption { text-align: right; }
+  .pipe-cells { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+  .pipe-cell { text-align: center; }
+  .pipe-cell .v { font-size: 1.05rem; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .pipe-cell .l { color: var(--ink-2); font-size: .68rem; white-space: nowrap; }
+  .pipe-arrow { color: var(--baseline); font-size: 1rem; }
+  .pipe-chip {
+    background: var(--data); color: #fff; border-radius: 8px;
+    padding: .5rem 1rem; text-align: center; align-self: center;
+  }
+  .pipe-chip .v { font-size: 1.25rem; font-weight: 700; line-height: 1.2; }
+  .pipe-chip .l { font-size: .66rem; text-transform: uppercase; letter-spacing: .06em; }
+
+  footer {
+    max-width: 1080px; margin: 0 auto; padding: 0 1.5rem 2rem;
+    font-size: .74rem; color: var(--ink-3);
+    display: flex; gap: 1rem; flex-wrap: wrap;
+  }
+
+  @media (max-width: 900px) {
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .topnav { display: none; }
+  }
+  @media (max-width: 640px) {
+    .card .src { display: none; }
+    .kpis { grid-template-columns: 1fr 1fr; gap: .5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo">
+    <div class="logo-mark" aria-hidden="true">A</div>
+    <div class="wordmark">ACME ENTERPRISE<small>Board View</small></div>
+  </div>
+  <nav class="topnav" aria-label="Main">
+    <a href="#" aria-current="page">Board View</a>
+    <a href="#">Customers</a>
+    <a href="#">Rollout</a>
+    <a href="#">Reports</a>
+  </nav>
+  <div class="who"><span class="avatar" aria-hidden="true">D</span> Dana · Chief Operating Officer</div>
+</header>
+
+<main>
+
+  <div class="head">
+    <div>
+      <h1>Acme Agentic Experience — Board View</h1>
+      <div class="sub">Agentic hiring rollout · all customers, one platform</div>
+    </div>
+    <div class="right">
+      <span class="refreshed">Last refreshed <span id="refreshed"></span></span>
+      <div class="toggle" role="group" aria-label="Granularity">
+        <button type="button" data-g="DAILY" aria-pressed="false">Daily</button>
+        <button type="button" data-g="WEEKLY" aria-pressed="true">Weekly</button>
+        <button type="button" data-g="MONTHLY" aria-pressed="false">Monthly</button>
+      </div>
+    </div>
+  </div>
+
+  <section aria-label="Key metrics">
+    <div class="kpis" id="kpis"></div>
+  </section>
+
+  <section class="card" aria-label="Trend">
+    <h2>Median time-to-shortlist across live customers
+      <span class="src">AgenticExperienceBoardController.getBoardMetrics()</span></h2>
+    <div class="chart-wrap" id="chartWrap">
+      <svg id="chart" viewBox="0 0 600 220" preserveAspectRatio="xMidYMid meet" role="img"
+           aria-label="Median time-to-shortlist across live customers against the pre-Agentforce baseline"></svg>
+      <div class="tip" id="tip"></div>
+    </div>
+    <details class="chart-data">
+      <summary>View data</summary>
+      <table id="chartTable"></table>
+    </details>
+  </section>
+
+  <section class="card" aria-label="Pipeline">
+    <h2>Two sides, one pipeline
+      <span class="cap">Aggregated across all live customers</span></h2>
+    <div class="pipeline">
+      <div class="pipe-side">
+        <div class="pipe-caption">Client side</div>
+        <div class="pipe-cells">
+          <div class="pipe-cell"><div class="v">860</div><div class="l">Open reqs</div></div>
+          <span class="pipe-arrow" aria-hidden="true">&#8594;</span>
+          <div class="pipe-cell"><div class="v">512</div><div class="l">Shortlists delivered</div></div>
+          <span class="pipe-arrow" aria-hidden="true">&#8594;</span>
+        </div>
+      </div>
+      <div class="pipe-chip"><div class="v">480</div><div class="l">placements</div></div>
+      <div class="pipe-side right">
+        <div class="pipe-caption">Candidate side</div>
+        <div class="pipe-cells">
+          <span class="pipe-arrow" aria-hidden="true">&#8592;</span>
+          <div class="pipe-cell"><div class="v">43.7K</div><div class="l">Outreach sent</div></div>
+          <span class="pipe-arrow" aria-hidden="true">&#8592;</span>
+          <div class="pipe-cell"><div class="v">33.3K</div><div class="l">Flagged for review</div></div>
+          <span class="pipe-arrow" aria-hidden="true">&#8592;</span>
+          <div class="pipe-cell"><div class="v">128K</div><div class="l">Agent-screened</div></div>
+          <span class="pipe-arrow" aria-hidden="true">&#8592;</span>
+          <div class="pipe-cell"><div class="v">152K</div><div class="l">Applications</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <span>Self-contained demo page — the deployed version is the <code>agenticExperienceBoard</code> LWC on the "Acme Agentic Experience — Board View" app page.</span>
+  <span>All figures are a deterministic demo seed (marked <code>DEMO SEED</code> in Apex) except the workspace badge, which is a live SOQL count in the org.</span>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  // Seed mirrors AgenticExperienceBoardController exactly — no randomness.
+  var SEED = {
+    DAILY:   { days: [3.5,3.4,3.6,3.3,3.4,3.2,3.3,3.1,3.3,3.2,3.1,3.2,3.3,3.2],
+               noun: 'day',   screened: '18.4K', screenedDelta: '5%',
+               customersDelta: '1', autonomousDelta: '1 pt' },
+    WEEKLY:  { days: [4.9,4.6,4.4,4.1,3.9,3.8,3.6,3.5,3.4,3.3,3.3,3.2],
+               noun: 'week',  screened: '128K',  screenedDelta: '6%',
+               customersDelta: '4', autonomousDelta: '2 pts' },
+    MONTHLY: { days: [8.8,7.1,5.6,4.4,3.7,3.4],
+               noun: 'month', screened: '552K',  screenedDelta: '19%',
+               customersDelta: '11', autonomousDelta: '4 pts' }
+  };
+  var BASELINE = 9.5, Y_MAX = 10.5;
+  var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var VIEW = { w: 600, h: 220, padL: 14, padR: 104, padT: 20, padB: 28 };
+  var granularity = 'WEEKLY';
+
+  function dayLabel(d) { return d.getDate() + ' ' + MONTHS[d.getMonth()]; }
+
+  function labels(g) {
+    var n = SEED[g].days.length, out = [], today = new Date(), d;
+    for (var i = 0; i < n; i++) {
+      if (g === 'DAILY') {
+        d = new Date(today); d.setDate(d.getDate() - (n - 1 - i)); out.push(dayLabel(d));
+      } else if (g === 'WEEKLY') {
+        d = new Date(today); d.setDate(d.getDate() - 7 * (n - 1 - i)); out.push(dayLabel(d));
+      } else {
+        d = new Date(today); d.setMonth(d.getMonth() - (n - 1 - i)); out.push(MONTHS[d.getMonth()]);
+      }
+    }
+    return out;
+  }
+
+  function tiles(g) {
+    var s = SEED[g], vs = 'vs prior ' + s.noun;
+    return [
+      { num: '42 of 400', label: 'Customers live on agentic screening',
+        delta: '▲ ' + s.customersDelta + ' ' + vs },
+      { num: s.screened, label: 'Candidates screened by agents',
+        delta: '▲ ' + s.screenedDelta + ' ' + vs,
+        live: '+25 live in this workspace · LIVE FROM CRM' },
+      // Retention is quarterly by nature — it deliberately does not re-cut
+      // with the toggle. The dip-and-recover story lives in the Apex seed.
+      { num: '96.8%', label: 'Enterprise logo retention',
+        delta: '▲ 0.6 pts vs prior quarter' },
+      { num: '74%', label: 'Autonomous resolution rate',
+        delta: '▲ ' + s.autonomousDelta + ' ' + vs }
+    ];
+  }
+
+  function renderTiles() {
+    document.getElementById('kpis').innerHTML = tiles(granularity).map(function (t) {
+      return '<div class="kpi"><div class="num">' + t.num + '</div>' +
+        '<div class="label">' + t.label + '</div>' +
+        '<div class="delta"><span class="glyph">' + t.delta.slice(0, 1) + '</span>' + t.delta.slice(1) + '</div>' +
+        (t.live ? '<div class="live"><span class="dot"></span>' + t.live + '</div>' : '') +
+        '</div>';
+    }).join('');
+  }
+
+  var pts = [];   // current chart points for hover: {x, y, label, v}
+
+  function renderChart() {
+    var series = SEED[granularity].days, labs = labels(granularity), n = series.length;
+    var plotW = VIEW.w - VIEW.padL - VIEW.padR, plotH = VIEW.h - VIEW.padT - VIEW.padB;
+    var x = function (i) { return VIEW.padL + i * plotW / (n - 1); };
+    var y = function (v) { return VIEW.padT + (1 - v / Y_MAX) * plotH; };
+    var r1 = function (v) { return Math.round(v * 10) / 10; };
+
+    pts = series.map(function (v, i) { return { x: r1(x(i)), y: r1(y(v)), label: labs[i], v: v }; });
+    var bY = r1(y(BASELINE)), last = pts[n - 1];
+
+    document.getElementById('chart').innerHTML =
+      '<line class="chart-floor" x1="14" y1="192" x2="592" y2="192"/>' +
+      '<line class="chart-base" x1="14" y1="' + bY + '" x2="592" y2="' + bY + '"/>' +
+      '<text class="chart-base-label" x="592" y="' + (bY - 6) + '" text-anchor="end">pre-Agentforce: 9.5 days</text>' +
+      '<polyline class="chart-series" points="' +
+        pts.map(function (p) { return p.x + ',' + p.y; }).join(' ') + '"/>' +
+      '<line class="hover-line" id="hoverLine" x1="0" y1="' + VIEW.padT + '" x2="0" y2="192"/>' +
+      '<circle class="hover-dot" id="hoverDot" r="4"/>' +
+      '<circle class="chart-dot" cx="' + last.x + '" cy="' + last.y + '" r="4"/>' +
+      '<text class="chart-end-label" x="' + (last.x + 10) + '" y="' + (last.y + 4) + '">' + last.v + ' days</text>' +
+      '<text class="chart-axis-label" x="14" y="210">' + labs[0] + '</text>' +
+      '<text class="chart-axis-label" x="' + last.x + '" y="210" text-anchor="end">' + labs[n - 1] + '</text>';
+
+    document.getElementById('chartTable').innerHTML =
+      '<tr><th scope="col">Period</th><th scope="col">Median days</th></tr>' +
+      pts.map(function (p) { return '<tr><td>' + p.label + '</td><td>' + p.v + '</td></tr>'; }).join('');
+  }
+
+  // Hover layer: nearest-point crosshair + tooltip.
+  var svg = document.getElementById('chart'), wrap = document.getElementById('chartWrap'),
+      tip = document.getElementById('tip');
+  svg.addEventListener('mousemove', function (e) {
+    if (!pts.length) return;
+    var rect = svg.getBoundingClientRect(), scale = VIEW.w / rect.width;
+    var vx = (e.clientX - rect.left) * scale, best = pts[0];
+    for (var i = 1; i < pts.length; i++) if (Math.abs(pts[i].x - vx) < Math.abs(best.x - vx)) best = pts[i];
+    document.getElementById('hoverLine').setAttribute('x1', best.x);
+    document.getElementById('hoverLine').setAttribute('x2', best.x);
+    document.getElementById('hoverLine').style.opacity = 1;
+    var dot = document.getElementById('hoverDot');
+    dot.setAttribute('cx', best.x); dot.setAttribute('cy', best.y); dot.style.opacity = 1;
+    tip.textContent = best.label + ' — ' + best.v + ' days';
+    tip.style.left = (best.x / scale) + 'px';
+    tip.style.top = (best.y / scale) + 'px';
+    tip.style.opacity = 1;
+  });
+  svg.addEventListener('mouseleave', function () {
+    tip.style.opacity = 0;
+    document.getElementById('hoverLine').style.opacity = 0;
+    document.getElementById('hoverDot').style.opacity = 0;
+  });
+
+  document.querySelector('.toggle').addEventListener('click', function (e) {
+    var b = e.target.closest('button');
+    if (!b) return;
+    granularity = b.dataset.g;
+    document.querySelectorAll('.toggle button').forEach(function (btn) {
+      btn.setAttribute('aria-pressed', String(btn === b));
+    });
+    renderTiles(); renderChart();
+  });
+
+  var now = new Date();
+  document.getElementById('refreshed').textContent =
+    dayLabel(now) + ', ' + String(now.getHours()).padStart(2, '0') + ':' +
+    String(now.getMinutes()).padStart(2, '0');
+
+  renderTiles(); renderChart();
+})();
+</script>
+
+</body>
+</html>

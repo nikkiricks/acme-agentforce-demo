@@ -3,6 +3,10 @@
 **🏢 Live demo — Acme Talent Console:** <https://nikkiricks.github.io/acme-agentforce-demo/acme-dashboard.html>
 (GitHub Pages copy of [docs/acme-dashboard.html](docs/acme-dashboard.html) — what Acme's recruiters would see)
 
+**📊 Live demo — Acme Board View:** <https://nikkiricks.github.io/acme-agentforce-demo/acme-board-view.html>
+(GitHub Pages copy of [docs/acme-board-view.html](docs/acme-board-view.html) — Acme's C-suite reporting the
+agentic rollout to the board; HTML twin of the `agenticExperienceBoard` LWC deployed in the org)
+
 An Agentforce agent that does recruiter-grade bulk candidate triage against live CRM data —
 built, deployed, tested, and versioned **entirely from the terminal**. The Agentforce Builder
 UI was never opened. That's the point: under a customer constraint of "AI screening must be
@@ -129,6 +133,15 @@ rail, the 17-profile roster, and the outreach queue. Open it with:
 
 ```bash
 open docs/acme-dashboard.html
+```
+
+**Board-level dashboard:** [docs/acme-board-view.html](docs/acme-board-view.html) — the same
+page as the in-org `agenticExperienceBoard` LWC (Acme's C-suite → board view: mandate progress,
+platform-wide screenings, logo retention, autonomous rate), self-contained for when the org or
+network is down:
+
+```bash
+open docs/acme-board-view.html
 ```
 
 `docs/demo-runbook.md` is the verbatim 5-beat script with fallbacks and a night-before
