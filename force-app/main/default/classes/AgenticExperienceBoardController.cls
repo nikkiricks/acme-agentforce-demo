@@ -1,14 +1,19 @@
-// Data service for the Agentic Experience — Board View app page.
+// Data service for the Acme Agentic Experience — Board View app page.
+// Altitude: Acme's OWN C-suite reporting to Acme's board on the one-quarter
+// agentic-hiring mandate, across all ~400 enterprise customers — not the view
+// a single customer sees (that clone lives in CustomerPipelineController).
 // The LWC is a pure presentation layer bound to the typed contract below:
 // getCandidateSideStats() is live CRM SOQL; getBoardMetrics() is a seeded
 // insight layer that a Data Cloud / Tableau Next query can replace without
 // touching the component.
 public with sharing class AgenticExperienceBoardController {
 
-    // The one REAL number on the board: candidates the agent screened, counted
-    // live from CRM. Same canonical filter as scripts/verify-roster.sh, and
-    // WITH USER_MODE so the viewer sees only what their own access allows —
-    // the same wall SecurityBeatTest proves for a zero-permission user.
+    // The one REAL number on the board: this org is framed as one pilot
+    // customer workspace, and this live count feeds the "+N live in this
+    // workspace" badge on the platform-wide screenings tile. Same canonical
+    // filter as scripts/verify-roster.sh, and WITH USER_MODE so the viewer
+    // sees only what their own access allows — the same wall SecurityBeatTest
+    // proves for a zero-permission user.
     @AuraEnabled(cacheable=true)
     public static CandidateSideStats getCandidateSideStats() {
         CandidateSideStats stats = new CandidateSideStats();
@@ -53,6 +58,15 @@ public with sharing class AgenticExperienceBoardController {
         8.8, 7.1, 5.6, 4.4, 3.7, 3.4
     };
 
+    // Enterprise logo retention by quarter. The Q3 dip is the story's
+    // inciting incident — the Fortune 500 retailer logo lost to an
+    // "AI-native" competitor — and the recovery tracks the agentic rollout.
+    // Retention is quarterly by nature, so this tile deliberately does NOT
+    // re-cut with the D/W/M toggle; its delta is always vs prior quarter.
+    private static final List<Decimal> RETENTION_QUARTERS = new List<Decimal>{
+        99.0, 98.4, 95.9, 96.2, 96.8
+    };
+
     // Fixed English month abbreviations — label text must not drift with the
     // org locale between rehearsal and the live run.
     private static final List<String> MONTHS = new List<String>{
@@ -69,42 +83,44 @@ public with sharing class AgenticExperienceBoardController {
         String periodNoun = g == 'DAILY' ? 'day' : (g == 'WEEKLY' ? 'week' : 'month');
         String vsPrior = 'vs prior ' + periodNoun;
 
-        // Seeded delta for the LIVE tile (the count itself comes from
-        // getCandidateSideStats).
-        m.screenedDelta = delta(
-            g == 'DAILY' ? '3' : (g == 'WEEKLY' ? '9' : '21'), vsPrior, true);
-
         List<Decimal> series =
             g == 'DAILY' ? DAILY_DAYS : (g == 'WEEKLY' ? WEEKLY_DAYS : MONTHLY_DAYS);
         m.trend = buildTrend(g, series);
 
-        Decimal current = series[series.size() - 1];
-        Decimal prior = series[series.size() - 2];
-        // One-decimal delta, direction from the series itself so tile and
-        // chart can never disagree.
-        Decimal change = (prior - current).setScale(1);
+        Integer lastQ = RETENTION_QUARTERS.size() - 1;
+        Decimal retention = RETENTION_QUARTERS[lastQ];
+        Decimal retentionChange =
+            (retention - RETENTION_QUARTERS[lastQ - 1]).setScale(1);
 
         m.tiles = new List<KpiTile>{
-            tile('openRoles', 'Open client roles with a current shortlist', '34',
-                delta(g == 'DAILY' ? '1' : (g == 'WEEKLY' ? '3' : '6'), vsPrior, true)),
-            tile('timeToShortlist', 'Median time-to-shortlist', current.setScale(1) + ' days',
-                delta(change.abs() + ' days', vsPrior, change < 0)),
-            tile('autonomousRate', 'Autonomous resolution rate', '78%',
-                delta(g == 'DAILY' ? '1 pt' : (g == 'WEEKLY' ? '2 pts' : '5 pts'), vsPrior, true))
+            // The mandate-progress number: customers live on agentic screening.
+            tile('customersLive', 'Customers live on agentic screening', '42 of 400',
+                delta(g == 'DAILY' ? '1' : (g == 'WEEKLY' ? '4' : '11'), vsPrior, true)),
+            // Platform-wide screenings; the LWC pins the live workspace badge here.
+            tile('screenedPlatform', 'Candidates screened by agents',
+                g == 'DAILY' ? '18.4K' : (g == 'WEEKLY' ? '128K' : '552K'),
+                delta(g == 'DAILY' ? '5%' : (g == 'WEEKLY' ? '6%' : '19%'), vsPrior, true)),
+            tile('logoRetention', 'Enterprise logo retention', retention.setScale(1) + '%',
+                delta(retentionChange.abs() + ' pts', 'vs prior quarter', retentionChange > 0)),
+            // 74% autonomous ties out with the pipeline strip: 33.3K flagged
+            // of 128K screened = 26% escalated.
+            tile('autonomousRate', 'Autonomous resolution rate', '74%',
+                delta(g == 'DAILY' ? '1 pt' : (g == 'WEEKLY' ? '2 pts' : '4 pts'), vsPrior, true))
         };
 
         // Pipeline totals are period-independent on purpose: the strip is the
-        // structural "two sides, one pipeline" proof, and holding it stable
-        // while the toggle re-cuts everything above keeps the eye on the flow.
+        // structural "two sides, one pipeline" proof, aggregated across all
+        // live customers, and holding it stable while the toggle re-cuts
+        // everything above keeps the eye on the flow.
         m.pipeline = new Pipeline();
         m.pipeline.clientSide = new List<PipelineStage>{
-            stage('Open reqs', 34), stage('Shortlists delivered', 21)
+            stage('Open reqs', '860'), stage('Shortlists delivered', '512')
         };
         m.pipeline.candidateSide = new List<PipelineStage>{
-            stage('Applications', 412), stage('Agent-screened', 389),
-            stage('Flagged for review', 57), stage('Outreach sent', 143)
+            stage('Applications', '152K'), stage('Agent-screened', '128K'),
+            stage('Flagged for review', '33.3K'), stage('Outreach sent', '43.7K')
         };
-        m.pipeline.placements = 18;
+        m.pipeline.placements = 480;
         return m;
     }
 
@@ -149,7 +165,7 @@ public with sharing class AgenticExperienceBoardController {
         return d;
     }
 
-    private static PipelineStage stage(String label, Integer value) {
+    private static PipelineStage stage(String label, String value) {
         PipelineStage s = new PipelineStage();
         s.label = label;
         s.value = value;
@@ -166,8 +182,7 @@ public with sharing class AgenticExperienceBoardController {
 
     public class BoardMetrics {
         @AuraEnabled public String granularity;
-        @AuraEnabled public KpiDelta screenedDelta;
-        @AuraEnabled public List<KpiTile> tiles;
+        @AuraEnabled public List<KpiTile> tiles;      // exactly 4
         @AuraEnabled public List<TrendPoint> trend;
         @AuraEnabled public Decimal baselineDays;
         @AuraEnabled public String baselineLabel;
@@ -177,13 +192,13 @@ public with sharing class AgenticExperienceBoardController {
     public class KpiTile {
         @AuraEnabled public String key;
         @AuraEnabled public String label;
-        @AuraEnabled public String value;   // pre-formatted: '3.2 days', '78%', '34'
+        @AuraEnabled public String value;   // pre-formatted: '42 of 400', '128K', '96.8%'
         @AuraEnabled public KpiDelta delta;
     }
 
     public class KpiDelta {
-        @AuraEnabled public String amount;  // '0.1 days', '2 pts', '9'
-        @AuraEnabled public String label;   // 'vs prior week'
+        @AuraEnabled public String amount;  // '0.6 pts', '6%', '4'
+        @AuraEnabled public String label;   // 'vs prior week', 'vs prior quarter'
         @AuraEnabled public Boolean up;     // arrow direction only, never color
     }
 
@@ -200,6 +215,6 @@ public with sharing class AgenticExperienceBoardController {
 
     public class PipelineStage {
         @AuraEnabled public String label;
-        @AuraEnabled public Integer value;
+        @AuraEnabled public String value;   // pre-formatted platform-scale: '152K', '860'
     }
 }

@@ -21,6 +21,25 @@
     font-weight: 700;
 }
 
+.board-subtitle {
+    color: var(--board-ink-muted);
+    font-size: 0.8125rem;
+    margin-top: 0.125rem;
+}
+
+.section-head {
+    margin-bottom: 0.5rem;
+}
+
+.section-head .section-title {
+    margin-bottom: 0;
+}
+
+.section-caption {
+    color: var(--board-ink-muted);
+    font-size: 0.75rem;
+}
+
 .board-refreshed {
     color: var(--board-ink-muted);
     font-size: 0.75rem;

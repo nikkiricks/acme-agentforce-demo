@@ -1,7 +1,7 @@
 @IsTest
 private class AgenticExperienceBoardControllerTest {
 
-    // The live tile's query filters on Email LIKE '%example.com'. Inserting a
+    // The live badge's query filters on Email LIKE '%example.com'. Inserting a
     // control Contact with a NON-matching email alongside the matching ones is
     // what makes this test non-vacuous: without the control, "count == 3"
     // would also pass if the filter matched every Contact in the database.
@@ -37,15 +37,39 @@ private class AgenticExperienceBoardControllerTest {
         Assert.areEqual(12, m.trend.size(), 'Weekly trend should span 12 weeks');
         Assert.areEqual(9.5, m.baselineDays, 'Pre-agent baseline anchors the chart');
         Assert.areEqual(3.2, m.trend[11].days, 'Current weekly time-to-shortlist');
-        Assert.areEqual(3, m.tiles.size(), 'Exactly three seeded tiles beside the live one');
+        Assert.areEqual(4, m.tiles.size(), 'Exactly four board tiles');
+        Assert.areEqual('42 of 400', m.tiles[0].value,
+            'Mandate progress: customers live on agentic screening');
+        Assert.areEqual('128K', m.tiles[1].value, 'Platform-wide weekly screenings');
         Assert.areEqual(2, m.pipeline.clientSide.size(), 'Client side: reqs and shortlists');
         Assert.areEqual(4, m.pipeline.candidateSide.size(),
             'Candidate side: applications through outreach');
         Assert.isTrue(m.pipeline.placements > 0, 'The two sides must meet at placements');
     }
 
+    // Retention is Acme's own enterprise-logo churn story: the seeded series
+    // dips the quarter the Fortune 500 retailer left, then recovers with the
+    // agentic rollout. Quarterly by nature — the tile must NOT re-cut with
+    // the D/W/M toggle, so its delta label is pinned to 'vs prior quarter'
+    // at every granularity.
+    @IsTest
+    static void logoRetentionIsQuarterlyAndRecovering() {
+        for (String g : new List<String>{ 'DAILY', 'WEEKLY', 'MONTHLY' }) {
+            AgenticExperienceBoardController.BoardMetrics m =
+                AgenticExperienceBoardController.getBoardMetrics(g);
+            AgenticExperienceBoardController.KpiTile retention = m.tiles[2];
+            Assert.areEqual('logoRetention', retention.key,
+                'Retention holds the third tile slot at granularity ' + g);
+            Assert.areEqual('96.8%', retention.value,
+                'Retention value is quarterly and toggle-independent');
+            Assert.areEqual('vs prior quarter', retention.delta.label,
+                'Retention delta always compares quarters');
+            Assert.isTrue(retention.delta.up, 'Retention should be recovering');
+        }
+    }
+
     // The whole point of the seed is a story that trends the right way at
-    // every granularity — down for time-to-shortlist, believable (70s–80s%,
+    // every granularity — down for time-to-shortlist, believable (70s%,
     // never 99%) for autonomous resolution.
     @IsTest
     static void dailyAndMonthlySeriesHaveExpectedShape() {

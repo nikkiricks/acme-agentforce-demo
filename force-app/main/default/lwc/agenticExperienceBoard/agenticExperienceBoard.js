@@ -43,22 +43,19 @@ export default class AgenticExperienceBoard extends LightningElement {
     get lastRefreshed() {
         return this.candidateStats.data?.asOf;
     }
-    get screenedCount() {
-        return this.candidateStats.data?.screenedCount;
-    }
-    get screenedGlyph() {
-        return this.board.data?.screenedDelta?.up ? '▲' : '▼';
-    }
-    get screenedDeltaText() {
-        const d = this.board.data?.screenedDelta;
-        return d ? `${d.amount} ${d.label}` : '';
-    }
 
+    // The platform-wide screenings tile carries the one live number as a
+    // badge: this org, framed as a single pilot customer workspace.
     get seededTiles() {
+        const liveCount = this.candidateStats.data?.screenedCount;
         return (this.board.data?.tiles ?? []).map((t) => ({
             ...t,
             glyph: t.delta.up ? '▲' : '▼',
-            deltaText: `${t.delta.amount} ${t.delta.label}`
+            deltaText: `${t.delta.amount} ${t.delta.label}`,
+            liveBadge:
+                t.key === 'screenedPlatform' && liveCount !== undefined
+                    ? `+${liveCount} live in this workspace · LIVE FROM CRM`
+                    : undefined
         }));
     }
 
