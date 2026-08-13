@@ -166,6 +166,30 @@
     display: flex; gap: 1rem; flex-wrap: wrap;
   }
 
+  /* ---------- data sources tab ---------- */
+  .prov p { font-size: .88rem; color: var(--ink-2); margin-bottom: .6rem; }
+  .prov p strong { color: var(--ink); }
+  .prov pre {
+    background: var(--surface-2); border: 1px solid var(--rule); border-radius: 8px;
+    padding: .7rem .9rem; font-family: var(--mono); font-size: .78rem;
+    overflow-x: auto; margin: .5rem 0 .25rem; color: var(--ink);
+  }
+  .prov pre .cmt { color: var(--ink-3); }
+  .prov table { width: 100%; border-collapse: collapse; font-size: .84rem; margin-top: .25rem; }
+  .prov th {
+    text-align: left; font-size: .7rem; text-transform: uppercase; letter-spacing: .06em;
+    color: var(--ink-2); font-weight: 650; padding: .45rem .75rem .45rem 0;
+    border-bottom: 1px solid var(--rule-firm);
+  }
+  .prov td { padding: .5rem .75rem .5rem 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  .prov td.mono { font-family: var(--mono); font-size: .76rem; color: var(--ink-2); white-space: nowrap; }
+  .prov tr:last-child td { border-bottom: 0; }
+  .prov .quote {
+    border-left: 3px solid var(--data); background: var(--surface-2);
+    padding: .6rem .9rem; font-family: var(--mono); font-size: .78rem;
+    color: var(--ink-2); border-radius: 0 8px 8px 0; margin: .5rem 0;
+  }
+
   @media (max-width: 900px) {
     .kpis { grid-template-columns: repeat(2, 1fr); }
     .topnav { display: none; }
@@ -184,15 +208,15 @@
     <div class="wordmark">ACME ENTERPRISE<small>Board View</small></div>
   </div>
   <nav class="topnav" aria-label="Main">
-    <a href="#" aria-current="page">Board View</a>
+    <a href="#" id="nav-dash" aria-current="page">Board View</a>
+    <a href="#" id="nav-data">Data Sources</a>
     <a href="#">Customers</a>
-    <a href="#">Rollout</a>
     <a href="#">Reports</a>
   </nav>
   <div class="who"><span class="avatar" aria-hidden="true">D</span> Dana · Chief Executive Officer</div>
 </header>
 
-<main>
+<main id="main-dash">
 
   <div class="head">
     <div>
@@ -255,6 +279,67 @@
         </div>
       </div>
     </div>
+  </section>
+
+</main>
+
+<main id="main-data" class="prov" hidden>
+
+  <div class="head">
+    <div>
+      <h1>Where the numbers live</h1>
+      <div class="sub">Provenance for every figure on the board — the transparency is the talking point</div>
+    </div>
+  </div>
+
+  <section class="card">
+    <h2>The one live number — 25</h2>
+    <p>The <strong>"+25 live in this workspace · LIVE FROM CRM"</strong> badge is a real-time
+      SOQL count of Contact records in the org — the same roster the Agentforce agent screens
+      (17 imported candidates + 8 pre-existing contacts). It runs <code>WITH USER_MODE</code>,
+      so it only counts what the viewer's own access allows.</p>
+    <pre>SELECT COUNT(Id) FROM Contact WHERE Email LIKE '%example.com'</pre>
+    <p>See the records: <strong>App Launcher → Contacts</strong>, or
+      <code>sf org open -p "/lightning/o/Contact/list"</code>, or the repo's canonical check,
+      <code>bash scripts/verify-roster.sh</code>.</p>
+  </section>
+
+  <section class="card">
+    <h2>Everything else — deterministic demo seed (Apex code, not records)</h2>
+    <p>Every other figure exists in Salesforce only as <strong>code</strong>: fixed constants in
+      <code>AgenticExperienceBoardController</code>, deployed as an Apex class. No randomness —
+      rehearsal and the live run are identical. The seed section is marked:</p>
+    <div class="quote">// DEMO SEED — in production this method is swapped for a query against<br>
+      // Tableau Next / Data Cloud / CRM Analytics. The LWC contract does not change.</div>
+    <table>
+      <tr><th>On screen</th><th>Lives today</th><th>Production source</th></tr>
+      <tr><td>42 of 400 customers live</td><td class="mono">buildSeededMetrics() tile seed</td>
+          <td>Data Cloud insight over customer provisioning telemetry</td></tr>
+      <tr><td>128K / 18.4K / 552K screenings + volume area</td><td class="mono">WEEKLY_VOL, DAILY_VOL, MONTHLY_VOL</td>
+          <td>Platform event rollups / CRM Analytics</td></tr>
+      <tr><td>96.8% logo retention (dip &amp; recovery)</td><td class="mono">RETENTION_QUARTERS {99.0 … 96.8}</td>
+          <td>Renewal Opportunities in CRM</td></tr>
+      <tr><td>74% autonomous resolution</td><td class="mono">tile seed (ties to 33.3K / 128K flagged)</td>
+          <td>Agent session logs via Data Cloud</td></tr>
+      <tr><td>Time-to-shortlist 3.2 days + 9.5-day baseline</td><td class="mono">DAILY/WEEKLY/MONTHLY_DAYS</td>
+          <td>Req → shortlist timestamps</td></tr>
+      <tr><td>Pipeline strip (860 → 512 → 480 ← 43.7K …)</td><td class="mono">buildSeededMetrics() pipeline seed</td>
+          <td>Requisition &amp; application objects</td></tr>
+      <tr><td>9.4% overrides · 11 min response · 11 wks Spec→GA</td><td class="mono">product metric seeds (superset payload)</td>
+          <td>Review actions / messaging logs / release data</td></tr>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>See it in the org</h2>
+    <pre>sf data query -q "SELECT COUNT(Id) FROM Contact WHERE Email LIKE '%example.com'"
+sf org open -p "/lightning/o/Contact/list"              <span class="cmt"># the 25 real records</span>
+sf org open -p "/lightning/setup/ApexClasses/home"      <span class="cmt"># AgenticExperienceBoardController — the DEMO SEED block</span></pre>
+    <p>In the repo: <code>force-app/main/default/classes/AgenticExperienceBoardController.cls</code>;
+      the architecture note is <code>docs/dashboard-architecture.md</code>. The point on stage:
+      the badge proves the live wire works, and the <code>DEMO SEED</code> marking is the exact
+      line where Data Cloud, Tableau Next, or CRM Analytics plugs in — the dashboard component
+      never changes.</p>
   </section>
 
 </main>
@@ -398,6 +483,17 @@
     String(now.getMinutes()).padStart(2, '0');
 
   renderTiles(); renderChart();
+
+  // Board View ↔ Data Sources tab switching (same file, no navigation).
+  var navDash = document.getElementById('nav-dash'), navData = document.getElementById('nav-data');
+  var mainDash = document.getElementById('main-dash'), mainData = document.getElementById('main-data');
+  function showTab(dash) {
+    mainDash.hidden = !dash; mainData.hidden = dash;
+    if (dash) { navDash.setAttribute('aria-current', 'page'); navData.removeAttribute('aria-current'); }
+    else { navData.setAttribute('aria-current', 'page'); navDash.removeAttribute('aria-current'); }
+  }
+  navDash.addEventListener('click', function (e) { e.preventDefault(); showTab(true); });
+  navData.addEventListener('click', function (e) { e.preventDefault(); showTab(false); });
 })();
 </script>
 
