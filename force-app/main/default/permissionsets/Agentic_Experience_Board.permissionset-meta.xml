@@ -6,6 +6,14 @@
         <apexClass>AgenticExperienceBoardController</apexClass>
         <enabled>true</enabled>
     </classAccesses>
+    <classAccesses>
+        <apexClass>CustomerPipelineController</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <tabSettings>
+        <tab>Acme_for_Customers_Pipeline_View</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
     <tabSettings>
         <tab>Agentic_Experience_Board_View</tab>
         <visibility>Visible</visibility>
