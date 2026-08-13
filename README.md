@@ -29,6 +29,8 @@ Under the hood:
 | 25-candidate roster | `data/candidates-v2.csv` | 17 rows; mix of stars, borderline, AI-padded, wrong-role |
 | Agent test suite (5-case ladder) | `tests/agent/acme-triage-testspec.yaml` | topic + action + LLM-judge assertions |
 | Security proof | `force-app/main/default/classes/SecurityBeatTest.cls` | zero-data-by-default as a runnable Apex test |
+| Exec board dashboard (LWC) | `force-app/main/default/lwc/agenticExperienceBoard/` | 4 KPI tiles, hand-rolled SVG trend, D/W/M toggle, two-sides pipeline strip — see `docs/dashboard-architecture.md` |
+| Board data service + tests | `force-app/main/default/classes/AgenticExperienceBoardController*.cls` | pluggable insight layer: one live CRM query today, Data Cloud / Tableau Next tomorrow |
 
 ## Run it yourself
 
@@ -109,6 +111,7 @@ sf org open                                              # org home, logged in
 sf org open -p "/lightning/setup/EinsteinCopilot/home"   # Agentforce Agents — open "Acme Enterprise" for the Builder view + preview pane
 sf org open -p "/lightning/setup/Flows/home"             # the two CLI-authored flows
 sf org open -p "/lightning/o/Contact/list"               # the 25-candidate roster
+sf org open -p "/lightning/n/Agentic_Experience_Board_View"  # exec board dashboard (Agentic Experience — Board View)
 ```
 
 Everything you'll see there — the agent's topics and actions, the active flow versions, the
