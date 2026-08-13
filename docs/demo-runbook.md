@@ -157,9 +157,10 @@ perfect — because when it isn't, one command tells you exactly where."
 
 ## Beat 4.5 — The board view (~90s)
 
-The exec answer to "so is the transformation working?" — one Lightning page, one
-URL, next to the agent it reports on. Runs between the ladder and the close so
-the close still lands last.
+Acme's C-suite reporting to Acme's board on the one-quarter agentic-hiring
+mandate — set after losing the largest enterprise logo (a Fortune 500 retailer)
+to an AI-native competitor. One Lightning page, one URL, next to the platform it
+reports on. Runs between the ladder and the close so the close still lands last.
 
 ```bash
 sf org open -p "/lightning/n/Agentic_Experience_Board_View"
@@ -168,27 +169,35 @@ sf org open -p "/lightning/n/Agentic_Experience_Board_View"
 (Also reachable from the App Launcher: search "Agentic". The URL only resolves
 because the `Agentic_Experience_Board` permission set grants tab visibility —
 metadata-deployed tabs ship hidden for every profile. If the page 404s for a
-user, run `sf org assign permset -n Agentic_Experience_Board -o renewal-org`;
-manual fallback: Setup → Lightning App Builder → open "Agentic Experience —
-Board View" → **Activation…** → **Activate**.)
+user, run `sf org assign permset -n Agentic_Experience_Board -o renewal-org`,
+then use a FRESH browser session; manual fallback: Setup → Lightning App
+Builder → open the page → **Activation…** → **Activate**.)
 
 Five lines, one per element:
 
-1. **Toggle:** "Daily, weekly, monthly — one click and every number re-cuts.
-   That's the Goodwin quote, made literal."
-2. **Tiles:** "Four numbers, no more. The first one is live from CRM right
-   now — 25 candidates this agent actually screened."
-3. **Trend:** "Time-to-shortlist: 9.5 days before Agentforce — the dashed
-   line — 3.2 today."
-4. **Strip:** "Client side on the left, candidate side on the right, meeting at
-   placements — both sides of the business in one pipeline."
-5. **Close the beat:** "One platform: this lives next to the agent, and the data
-   layer behind it is pluggable — same component when Data Cloud takes over.
-   `docs/dashboard-architecture.md` is the two-paragraph version for Q&A."
+1. **Mandate progress (tile 1):** "The board asked for an agentic hiring
+   experience in one quarter. 42 of our 400 enterprise customers are live on
+   agentic screening, and that number moves every week."
+2. **Proof at scale (tile 2 + chart):** "128K candidates screened by agents
+   this week across the platform — the badge is 25 live in this workspace, one
+   pilot customer, real CRM. And median time-to-shortlist across live
+   customers: 9.5 days before Agentforce, the dashed line — 3.2 today."
+3. **Logo retention (tile 3):** "This is why the mandate exists: retention
+   dipped the quarter we lost the retailer. 96.8% now, recovering as the
+   rollout ramps."
+4. **Autonomous rate (tile 4) + strip:** "74% of screenings need no human
+   escalation — and below, every live customer's client side and candidate
+   side meeting at placements."
+5. **Close the beat:** "One platform, daily, weekly, monthly — both sides of
+   every customer's business. The data layer is pluggable: same component when
+   Data Cloud takes over. `docs/dashboard-architecture.md` is the version for
+   Q&A."
 
-Honesty note if asked: tile 1 is a live SOQL count; the rest is a deterministic
-seed clearly marked `DEMO SEED` in the controller — that marking is the
-architecture point, not a caveat.
+Honesty note if asked: the workspace badge is a live SOQL count; the rest is a
+deterministic seed clearly marked `DEMO SEED` in the controller — that marking
+is the architecture point, not a caveat. If Q&A goes to "what does a customer
+see?", the customer-altitude clone is one URL away:
+`sf org open -p "/lightning/n/Acme_for_Customers_Pipeline_View"`.
 
 ---
 
@@ -275,9 +284,10 @@ before the call starts, and `docs/pov-brief.md` open as the long form.
 - [ ] `export FORCE_COLOR=0` confirmed in the demo shell profile.
 - [ ] `bash scripts/verify-roster.sh` returns 25.
 - [ ] `sf apex run test --tests SecurityBeatTest` returns 2/2.
-- [ ] `sf apex run test --tests AgenticExperienceBoardControllerTest` returns 4/4.
+- [ ] `sf apex run test --tests AgenticExperienceBoardControllerTest` returns 5/5.
 - [ ] `sf org open -p "/lightning/n/Agentic_Experience_Board_View"` loads; tile 1
-      shows **25**, Weekly is selected, toggling changes the chart.
+      shows **42 of 400**, tile 2's badge shows **+25 live in this workspace**,
+      Weekly is selected, toggling changes the chart.
 - [ ] `sf agent test run --api-name Acme_Enterprise_Triage_Ladder --wait 10`
       returns Topic 5/5, Action 4–5/5, Outcome 3–4/5 (case 2 red is expected). Record the new job ID here and
       in the fallback command above.
