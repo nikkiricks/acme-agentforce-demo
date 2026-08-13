@@ -1,0 +1,126 @@
+<template>
+    <article class="slds-card board slds-p-around_medium">
+
+        <!-- Header row: title · last refreshed · D/W/M toggle -->
+        <div class="slds-grid slds-grid_vertical-align-center slds-wrap board-header">
+            <h1 class="slds-text-heading_medium board-title">Agentic Experience — Board View</h1>
+            <div class="slds-col_bump-left slds-grid slds-grid_vertical-align-center">
+                <span class="board-refreshed slds-m-right_medium" lwc:if={lastRefreshed}>
+                    Last refreshed&nbsp;
+                    <lightning-formatted-date-time
+                        value={lastRefreshed}
+                        month="short" day="numeric"
+                        hour="2-digit" minute="2-digit">
+                    </lightning-formatted-date-time>
+                </span>
+                <lightning-button-group>
+                    <lightning-button label="Daily" data-granularity="DAILY"
+                        variant={dailyVariant} onclick={handleGranularity}></lightning-button>
+                    <lightning-button label="Weekly" data-granularity="WEEKLY"
+                        variant={weeklyVariant} onclick={handleGranularity}></lightning-button>
+                    <lightning-button label="Monthly" data-granularity="MONTHLY"
+                        variant={monthlyVariant} onclick={handleGranularity}></lightning-button>
+                </lightning-button-group>
+            </div>
+        </div>
+
+        <template lwc:if={hasError}>
+            <p class="slds-text-color_error slds-m-top_medium">
+                Couldn&rsquo;t load board data. Refresh the page, or check field access on Contact.
+            </p>
+        </template>
+
+        <template lwc:if={isLoading}>
+            <div class="board-spinner slds-m-top_x-large">
+                <lightning-spinner alternative-text="Loading board metrics" size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <template lwc:if={isReady}>
+
+            <!-- Exactly 4 KPI tiles -->
+            <div class="slds-grid slds-gutters slds-wrap slds-m-top_medium">
+                <div class="slds-col slds-size_1-of-2 slds-medium-size_1-of-4 slds-m-bottom_small">
+                    <div class="kpi slds-box">
+                        <div class="kpi-value">{screenedCount}</div>
+                        <div class="kpi-label">Candidates screened by agent</div>
+                        <div class="kpi-delta">
+                            <span class="kpi-glyph">{screenedGlyph}</span>
+                            {screenedDeltaText}
+                        </div>
+                        <div class="kpi-live"><span class="kpi-live-dot"></span>Live from CRM</div>
+                    </div>
+                </div>
+                <template for:each={seededTiles} for:item="tile">
+                    <div key={tile.key} class="slds-col slds-size_1-of-2 slds-medium-size_1-of-4 slds-m-bottom_small">
+                        <div class="kpi slds-box">
+                            <div class="kpi-value">{tile.value}</div>
+                            <div class="kpi-label">{tile.label}</div>
+                            <div class="kpi-delta">
+                                <span class="kpi-glyph">{tile.glyph}</span>
+                                {tile.deltaText}
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- One trend chart: median time-to-shortlist vs pre-agent baseline -->
+            <div class="slds-box board-section slds-m-top_x-small" lwc:if={chart}>
+                <h2 class="section-title">Median time-to-shortlist</h2>
+                <svg class="board-chart" viewBox="0 0 600 220" preserveAspectRatio="xMidYMid meet"
+                     role="img" aria-label="Median time-to-shortlist trend against the pre-Agentforce baseline">
+                    <line class="chart-floor" x1="14" y1="192" x2="592" y2="192"></line>
+                    <line class="chart-baseline" x1="14" y1={chart.baselineY} x2="592" y2={chart.baselineY}></line>
+                    <text class="chart-baseline-label" x="592" y={chart.baselineLabelY}
+                          text-anchor="end">{chart.baselineLabel}</text>
+                    <polyline class="chart-series" points={chart.points}></polyline>
+                    <circle class="chart-dot" cx={chart.dotX} cy={chart.dotY} r="4"></circle>
+                    <text class="chart-end-label" x={chart.endLabelX} y={chart.endLabelY}>{chart.endText}</text>
+                    <text class="chart-axis-label" x="14" y="210">{chart.firstLabel}</text>
+                    <text class="chart-axis-label" x={chart.lastX} y="210" text-anchor="end">{chart.lastLabel}</text>
+                </svg>
+            </div>
+
+            <!-- Two sides, one pipeline -->
+            <div class="slds-box board-section slds-m-top_small" lwc:if={pipeline}>
+                <h2 class="section-title">Two sides, one pipeline</h2>
+                <div class="pipeline">
+                    <div class="pipeline-side">
+                        <div class="pipeline-caption">Client side</div>
+                        <div class="pipeline-cells">
+                            <template for:each={clientCells} for:item="cell">
+                                <div key={cell.label} class="pipeline-flow">
+                                    <div class="pipeline-cell">
+                                        <div class="pipeline-value">{cell.value}</div>
+                                        <div class="pipeline-label">{cell.label}</div>
+                                    </div>
+                                    <span class="pipeline-arrow" aria-hidden="true">&#8594;</span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="pipeline-chip">
+                        <div class="pipeline-chip-value">{placements}</div>
+                        <div class="pipeline-chip-label">placements</div>
+                    </div>
+                    <div class="pipeline-side pipeline-side_right">
+                        <div class="pipeline-caption">Candidate side</div>
+                        <div class="pipeline-cells">
+                            <template for:each={candidateCellsInward} for:item="cell">
+                                <div key={cell.label} class="pipeline-flow">
+                                    <span class="pipeline-arrow" aria-hidden="true">&#8592;</span>
+                                    <div class="pipeline-cell">
+                                        <div class="pipeline-value">{cell.value}</div>
+                                        <div class="pipeline-label">{cell.label}</div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </template>
+    </article>
+</template>
