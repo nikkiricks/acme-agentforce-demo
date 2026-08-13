@@ -155,8 +155,13 @@ export default class AgenticExperienceBoard extends LightningElement {
             };
         }
 
+        const seriesPoints = trend.map((p, i) => `${r1(x(i))},${r1(y(p.days))}`).join(' ');
+
         return {
-            points: trend.map((p, i) => `${r1(x(i))},${r1(y(p.days))}`).join(' '),
+            points: seriesPoints,
+            // Brand pass presentation only: the same series geometry closed
+            // down to the floor, so CSS can wash the area under the line.
+            areaPoints: `${r1(x(0))},${FLOOR_Y} ${seriesPoints} ${r1(x(n - 1))},${FLOOR_Y}`,
             baselineY,
             baselineLabelY: baselineY - 6,
             baselineLabel: data.baselineLabel,

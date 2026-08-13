@@ -5,6 +5,7 @@
         <div class="slds-grid slds-grid_vertical-align-center slds-wrap board-header">
             <div>
                 <h1 class="slds-text-heading_medium board-title">{title}</h1>
+                <div class="board-rule" aria-hidden="true"></div>
                 <p class="board-subtitle">{subtitle}</p>
             </div>
             <div class="slds-col_bump-left slds-grid slds-grid_vertical-align-center">
@@ -71,6 +72,7 @@
                 <svg class="board-chart" viewBox="0 0 600 220" preserveAspectRatio="xMidYMid meet"
                      role="img" aria-label={chartTitle}>
                     <polygon lwc:if={chart.volumePoints} class="chart-volume" points={chart.volumePoints}></polygon>
+                    <polygon class="chart-area" points={chart.areaPoints}></polygon>
                     <line class="chart-floor" x1="14" y1="192" x2="592" y2="192"></line>
                     <line class="chart-baseline" x1="14" y1={chart.baselineY} x2="592" y2={chart.baselineY}></line>
                     <text class="chart-baseline-label" x="592" y={chart.baselineLabelY}
