@@ -192,7 +192,11 @@
 
   @media (max-width: 900px) {
     .kpis { grid-template-columns: repeat(2, 1fr); }
-    .topnav { display: none; }
+    /* Keep the two FUNCTIONAL tabs reachable at any width; hide only the
+       decorative nav items. */
+    .topnav a:not(#nav-dash):not(#nav-data) { display: none; }
+    .topbar { gap: 1rem; }
+    .topbar .who { display: none; }
   }
   @media (max-width: 640px) {
     .card .src { display: none; }
