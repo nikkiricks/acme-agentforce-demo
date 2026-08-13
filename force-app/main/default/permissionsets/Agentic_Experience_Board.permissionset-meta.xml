@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <label>Agentic Experience Board</label>
+    <description>Deliberate grant for the exec board view: tab visibility plus the board data service. Metadata-deployed tabs ship hidden for every profile; this grant is what makes the board URL resolve. Same pattern as Renewal_Radar_User.</description>
+    <classAccesses>
+        <apexClass>AgenticExperienceBoardController</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <tabSettings>
+        <tab>Agentic_Experience_Board_View</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+</PermissionSet>

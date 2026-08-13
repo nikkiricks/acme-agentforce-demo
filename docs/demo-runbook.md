@@ -165,9 +165,12 @@ the close still lands last.
 sf org open -p "/lightning/n/Agentic_Experience_Board_View"
 ```
 
-(Also reachable from the App Launcher: search "Agentic". If the tab ever goes
-missing, Setup → Lightning App Builder → open "Agentic Experience — Board View"
-→ **Activation…** → **Activate**.)
+(Also reachable from the App Launcher: search "Agentic". The URL only resolves
+because the `Agentic_Experience_Board` permission set grants tab visibility —
+metadata-deployed tabs ship hidden for every profile. If the page 404s for a
+user, run `sf org assign permset -n Agentic_Experience_Board -o renewal-org`;
+manual fallback: Setup → Lightning App Builder → open "Agentic Experience —
+Board View" → **Activation…** → **Activate**.)
 
 Five lines, one per element:
 
