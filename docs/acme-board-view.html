@@ -6,20 +6,31 @@
 <title>Acme Board View</title>
 <style>
   :root {
-    --paper:      #f4f5f8;
-    --surface:    #ffffff;
-    --surface-2:  #f8f9fb;
-    --ink:        #101623;
-    --ink-2:      #545c6e;
-    --ink-3:      #8a91a1;
-    --rule:       #e3e6ec;
-    --rule-firm:  #c9cedb;
-    --brand:      #12284b;   /* Acme navy */
+    /* ACME ENTERPRISE brand tokens — same six as the LWC's brand pass.
+       Black angular monogram on white, one periwinkle edge: black-and-white,
+       hard angles, zero rounded corners, one restrained blue accent. */
+    --acme-ink:        #141414; /* logo black — primary text, chart lines, emphasis */
+    --acme-paper:      #ffffff; /* card surfaces */
+    --acme-periwinkle: #b8c7f0; /* the logo's edge blue — washes, borders, chart fills */
+    --acme-accent:     #4f6bd6; /* working accent derived from the periwinkle — live elements */
+    --acme-gray:       #6b6b6b; /* baseline/context data, secondary text */
+    --acme-hairline:   #e4e4e4;
+
+    /* Page roles mapped onto the brand tokens. */
+    --paper:      #f5f5f5;              /* neutral field behind the framed board */
+    --surface:    var(--acme-paper);
+    --surface-2:  #fafafa;
+    --ink:        var(--acme-ink);
+    --ink-2:      var(--acme-gray);
+    --ink-3:      var(--acme-gray);
+    --rule:       var(--acme-hairline);
+    --rule-firm:  var(--acme-ink);
+    --brand:      var(--acme-ink);
     --brand-ink:  #ffffff;
-    --accent:     #e8590c;   /* freight orange — brand chrome only, never status */
-    --data:       #2f5da8;   /* validated chart step of the brand hue — agent-driven data */
-    --baseline:   #8a91a1;   /* neutral context: pre-agent baseline, arrows */
-    --ok:         #0ca30c;
+    --accent:     var(--acme-periwinkle); /* chrome accent only, never status */
+    --data:       var(--acme-ink);        /* agent-driven data wears the ink */
+    --baseline:   var(--acme-gray);       /* neutral context: pre-agent baseline, arrows */
+    --ok:         var(--acme-accent);
 
     --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
     --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
@@ -43,76 +54,109 @@
     height: 56px;
   }
   .logo { display: flex; align-items: center; gap: .65rem; }
+  /* The monogram: heavy black "A" on white, corner clipped at 45°. */
   .logo-mark {
-    width: 26px; height: 26px; border-radius: 6px;
-    background: var(--accent);
+    width: 26px; height: 26px; border-radius: 0;
+    background: var(--acme-paper);
+    clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 0 100%);
     display: grid; place-items: center;
-    font-weight: 800; font-size: 15px; color: #fff;
+    font-weight: 800; font-size: 15px; color: var(--acme-ink);
   }
-  .wordmark { font-weight: 700; letter-spacing: .14em; font-size: .8rem; }
-  .wordmark small { display: block; font-weight: 400; letter-spacing: .04em; font-size: .68rem; color: #a8b4c9; }
+  .wordmark { font-weight: 800; letter-spacing: .14em; font-size: .8rem; }
+  .wordmark small { display: block; font-weight: 400; letter-spacing: .04em; font-size: .68rem; color: #b9b9b9; }
   .topnav { display: flex; gap: .25rem; margin-left: .5rem; }
   .topnav a {
-    color: #c4cddd; text-decoration: none; font-size: .85rem;
-    padding: .35rem .75rem; border-radius: 6px;
+    color: #c9c9c9; text-decoration: none; font-size: .85rem;
+    padding: .35rem .75rem; border-radius: 0;
   }
   .topnav a:hover { background: rgba(255,255,255,0.08); color: #fff; }
   .topnav a[aria-current] {
     color: #fff; font-weight: 600;
     background: rgba(255,255,255,0.10);
-    box-shadow: inset 0 -2px 0 var(--accent);
+    box-shadow: inset 0 -2px 0 var(--acme-periwinkle);
   }
-  .topbar .who { margin-left: auto; display: flex; align-items: center; gap: .6rem; font-size: .85rem; color: #d7deea; }
+  .topbar .who { margin-left: auto; display: flex; align-items: center; gap: .6rem; font-size: .85rem; color: #e0e0e0; }
   .avatar {
-    width: 28px; height: 28px; border-radius: 50%;
-    background: #2c4571; color: #fff;
-    display: grid; place-items: center; font-size: .8rem; font-weight: 600;
+    width: 28px; height: 28px; border-radius: 0;
+    background: var(--acme-paper); color: var(--acme-ink);
+    display: grid; place-items: center; font-size: .8rem; font-weight: 800;
   }
 
-  main { max-width: 1080px; margin: 0 auto; padding: 1.5rem 1.5rem 2rem; }
+  /* The logo's blue edge as the board's frame: white field, thin periwinkle
+     border, no curves. */
+  main {
+    max-width: 1080px; margin: 1.25rem auto; padding: 1.5rem 1.5rem 2rem;
+    background: var(--acme-paper);
+    border: 3px solid var(--acme-periwinkle);
+  }
 
   /* ---------- page header row ---------- */
   .head { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1rem; margin: .25rem 0 1.25rem; }
-  .head h1 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.01em; }
+  .head h1 {
+    font-size: 1.35rem; font-weight: 800; letter-spacing: -0.015em;
+    text-transform: uppercase;
+  }
+  /* Short thick rule, right end clipped at 45° — the logo's diagonal cut. */
+  .head-rule {
+    width: 48px; height: 4px; background: var(--acme-ink);
+    clip-path: polygon(0 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
+    margin: .35rem 0 .2rem;
+  }
   .head .sub { color: var(--ink-2); font-size: .85rem; margin-top: .15rem; }
   .head .right { margin-left: auto; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
   .refreshed { font-size: .78rem; color: var(--ink-2); white-space: nowrap; }
-  .toggle { display: inline-flex; border: 1px solid var(--rule-firm); border-radius: 8px; overflow: hidden; }
+  .toggle { display: inline-flex; border: 1px solid var(--acme-ink); border-radius: 0; overflow: hidden; }
   .toggle button {
     font: inherit; font-size: .82rem; padding: .35rem .85rem; cursor: pointer;
-    background: var(--surface); color: var(--ink-2); border: 0;
+    background: var(--surface); color: var(--acme-ink); border: 0;
   }
-  .toggle button + button { border-left: 1px solid var(--rule-firm); }
-  .toggle button[aria-pressed="true"] { background: var(--brand); color: #fff; font-weight: 600; }
-  .toggle button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .toggle button + button { border-left: 1px solid var(--acme-ink); }
+  .toggle button[aria-pressed="true"] { background: var(--acme-ink); color: #fff; font-weight: 600; }
+  .toggle button:focus-visible { outline: 2px solid var(--acme-accent); outline-offset: 1px; }
 
   /* ---------- cards & sections ---------- */
   section { margin-bottom: 1.25rem; }
   .card {
-    background: var(--surface); border: 1px solid var(--rule); border-radius: 10px;
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 0;
     padding: 1rem 1.15rem;
   }
   .card h2 {
     font-size: .8rem; text-transform: uppercase; letter-spacing: .08em;
-    color: var(--ink-2); font-weight: 650; margin-bottom: .75rem;
+    color: var(--acme-ink); font-weight: 700; margin-bottom: .75rem;
   }
   .card .src { float: right; font-size: .7rem; color: var(--ink-3); font-family: var(--mono); text-transform: none; letter-spacing: 0; }
   .card .cap { float: right; font-size: .74rem; color: var(--ink-3); text-transform: none; letter-spacing: 0; }
 
   /* ---------- KPI tiles ---------- */
   .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: .75rem; }
+  /* White card, hairline border, 4px ink top rule, top-right corner clipped
+     at 45° — each tile carries the logo's angular cut. */
   .kpi {
-    background: var(--surface); border: 1px solid var(--rule); border-radius: 10px;
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 0;
+    border-top: 4px solid var(--acme-ink);
+    clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
     padding: .9rem 1rem; min-width: 0;
   }
-  .kpi .num { font-size: 1.7rem; font-weight: 700; line-height: 1.15; font-variant-numeric: tabular-nums; }
-  .kpi .label { font-size: .78rem; color: var(--ink-2); margin-top: .15rem; }
-  .kpi .delta { font-size: .76rem; color: var(--ink-2); margin-top: .45rem; }
+  .kpi .num { font-size: 1.7rem; font-weight: 800; line-height: 1.15; font-variant-numeric: tabular-nums; }
+  .kpi .label {
+    font-size: .7rem; color: var(--acme-gray); margin-top: .3rem;
+    font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
+  }
+  .kpi .delta { font-size: .76rem; color: var(--acme-gray); margin-top: .45rem; }
   .kpi .delta .glyph { font-size: .62rem; }
-  .kpi .live { font-size: .7rem; color: var(--ink-2); margin-top: .3rem; text-transform: uppercase; letter-spacing: .04em; }
+  /* The one accent moment in the tiles: square LIVE badge, accent border +
+     accent text on white. */
+  .kpi .live {
+    display: inline-flex; align-items: center;
+    border: 1px solid var(--acme-accent); color: var(--acme-accent);
+    background: var(--acme-paper);
+    font-size: .64rem; font-weight: 700; margin-top: .45rem;
+    padding: .12rem .4rem;
+    text-transform: uppercase; letter-spacing: .08em;
+  }
   .kpi .live .dot {
     display: inline-block; width: .42rem; height: .42rem; border-radius: 50%;
-    background: var(--ok); margin-right: .3rem;
+    background: var(--acme-accent); margin-right: .3rem;
   }
 
   /* ---------- trend chart ---------- */
@@ -121,15 +165,17 @@
   .chart-floor { stroke: var(--rule); stroke-width: 1; }
   .chart-base  { stroke: var(--baseline); stroke-width: 1; stroke-dasharray: 4 4; }
   .chart-base-label, .chart-axis-label { fill: var(--baseline); font-size: 12px; font-family: var(--sans); }
-  .chart-series { fill: none; stroke: var(--data); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  /* Agent-driven series: ink line over a translucent periwinkle wash. */
+  .chart-area { fill: var(--acme-periwinkle); fill-opacity: .35; stroke: none; }
+  .chart-series { fill: none; stroke: var(--data); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
   .chart-dot { fill: var(--data); stroke: #fff; stroke-width: 2; }
   .chart-end-label { fill: var(--ink); font-size: 13px; font-weight: 700; font-family: var(--sans); }
   .hover-dot { fill: var(--data); stroke: #fff; stroke-width: 2; opacity: 0; }
-  .hover-line { stroke: var(--rule-firm); stroke-width: 1; opacity: 0; }
+  .hover-line { stroke: var(--acme-gray); stroke-width: 1; opacity: 0; }
   .tip {
     position: absolute; pointer-events: none; opacity: 0;
     background: var(--ink); color: #fff; font-size: .74rem;
-    padding: .25rem .55rem; border-radius: 6px; white-space: nowrap;
+    padding: .25rem .55rem; border-radius: 0; white-space: nowrap;
     transform: translate(-50%, -140%);
   }
   details.chart-data { margin-top: .5rem; font-size: .78rem; color: var(--ink-2); }
@@ -145,20 +191,33 @@
   .pipe-side { min-width: 0; }
   .pipe-caption {
     color: var(--ink-3); font-size: .68rem; font-weight: 700;
-    text-transform: uppercase; letter-spacing: .06em; margin-bottom: .35rem;
+    text-transform: uppercase; letter-spacing: .08em; margin-bottom: .35rem;
   }
   .pipe-side.right .pipe-caption { text-align: right; }
   .pipe-cells { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
-  .pipe-cell { text-align: center; }
+  /* Angular blocks instead of pills: opposite corners clipped at 45°, ink
+     text on periwinkle (never white on periwinkle — fails contrast). Client
+     side full-strength, candidate side a lighter tint. */
+  .pipe-cell {
+    text-align: center;
+    background: var(--acme-periwinkle);
+    padding: .4rem .7rem;
+    clip-path: polygon(0 8px, 8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
+  }
+  /* --acme-periwinkle at ~50% over white. */
+  .pipe-side.right .pipe-cell { background: rgba(184, 199, 240, .5); }
   .pipe-cell .v { font-size: 1.05rem; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
-  .pipe-cell .l { color: var(--ink-2); font-size: .68rem; white-space: nowrap; }
+  .pipe-cell .l { color: var(--acme-ink); font-size: .68rem; white-space: nowrap; }
   .pipe-arrow { color: var(--baseline); font-size: 1rem; }
+  /* Center placements node: solid ink, white text — the eye lands where the
+     story lands. Same angular cut as the cells. */
   .pipe-chip {
-    background: var(--data); color: #fff; border-radius: 8px;
+    background: var(--acme-ink); color: #fff; border-radius: 0;
+    clip-path: polygon(0 8px, 8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
     padding: .5rem 1rem; text-align: center; align-self: center;
   }
   .pipe-chip .v { font-size: 1.25rem; font-weight: 700; line-height: 1.2; }
-  .pipe-chip .l { font-size: .66rem; text-transform: uppercase; letter-spacing: .06em; }
+  .pipe-chip .l { font-size: .66rem; text-transform: uppercase; letter-spacing: .08em; }
 
   footer {
     max-width: 1080px; margin: 0 auto; padding: 0 1.5rem 2rem;
@@ -170,7 +229,7 @@
   .prov p { font-size: .88rem; color: var(--ink-2); margin-bottom: .6rem; }
   .prov p strong { color: var(--ink); }
   .prov pre {
-    background: var(--surface-2); border: 1px solid var(--rule); border-radius: 8px;
+    background: var(--surface-2); border: 1px solid var(--rule); border-radius: 0;
     padding: .7rem .9rem; font-family: var(--mono); font-size: .78rem;
     overflow-x: auto; margin: .5rem 0 .25rem; color: var(--ink);
   }
@@ -185,9 +244,9 @@
   .prov td.mono { font-family: var(--mono); font-size: .76rem; color: var(--ink-2); white-space: nowrap; }
   .prov tr:last-child td { border-bottom: 0; }
   .prov .quote {
-    border-left: 3px solid var(--data); background: var(--surface-2);
+    border-left: 3px solid var(--acme-accent); background: var(--surface-2);
     padding: .6rem .9rem; font-family: var(--mono); font-size: .78rem;
-    color: var(--ink-2); border-radius: 0 8px 8px 0; margin: .5rem 0;
+    color: var(--ink-2); border-radius: 0; margin: .5rem 0;
   }
 
   @media (max-width: 900px) {
@@ -225,6 +284,7 @@
   <div class="head">
     <div>
       <h1>Acme Agentic Experience — Board View</h1>
+      <div class="head-rule" aria-hidden="true"></div>
       <div class="sub">Agentic hiring rollout · all customers, one platform</div>
     </div>
     <div class="right">
@@ -292,6 +352,7 @@
   <div class="head">
     <div>
       <h1>Where the numbers live</h1>
+      <div class="head-rule" aria-hidden="true"></div>
       <div class="sub">Provenance for every figure on the board — the transparency is the talking point</div>
     </div>
   </div>
@@ -429,7 +490,14 @@ sf org open -p "/lightning/setup/ApexClasses/home"      <span class="cmt"># Agen
     pts = series.map(function (v, i) { return { x: r1(x(i)), y: r1(y(v)), label: labs[i], v: v }; });
     var bY = r1(y(BASELINE)), last = pts[n - 1];
 
+    // Brand pass: the series geometry closed down to the floor, so CSS can
+    // wash the area under the line (same trick as the LWC's areaPoints).
+    var areaPts = pts[0].x + ',192 ' +
+      pts.map(function (p) { return p.x + ',' + p.y; }).join(' ') +
+      ' ' + last.x + ',192';
+
     document.getElementById('chart').innerHTML =
+      '<polygon class="chart-area" points="' + areaPts + '"/>' +
       '<line class="chart-floor" x1="14" y1="192" x2="592" y2="192"/>' +
       '<line class="chart-base" x1="14" y1="' + bY + '" x2="592" y2="' + bY + '"/>' +
       '<text class="chart-base-label" x="592" y="' + (bY - 6) + '" text-anchor="end">pre-Agentforce: 9.5 days</text>' +
